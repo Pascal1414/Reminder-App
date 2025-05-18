@@ -34,22 +34,22 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
-                        android:layout_marginEnd="18dp"
-                        android:background="@drawable/rounded_background"
-                        android:padding="6dp"
-                        android:src="@drawable/ic_medication"
-                        app:tint="?colorOnSurfaceVariant" />
+                    android:gravity="">
 
                     <TextView
                         style="?textAppearanceTitleLarge"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Creatine Reminder" />
+
+                    <Button
+                        style="?attr/materialIconButtonFilledTonalStyle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/activity_main_title" />
+                        android:contentDescription="/filled_tonal_icon_btn_desc"
+                        app:icon="@drawable/ic_close"
+                        />
 
                 </LinearLayout>
 
@@ -57,7 +57,7 @@
                     style="?textAppearanceBodyMedium"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="40dp"
+                    android:layout_marginBottom="20dp"
                     android:text="Every Day"
                     android:textColor="?colorOnSurfaceVariant" />
 
@@ -65,7 +65,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="34dp"
+                    android:layout_marginBottom="20dp"
                     android:gravity="center_vertical">
 
 
@@ -78,30 +78,20 @@
                         android:textColor="?colorOnSurfaceVariant"
                         android:visibility="visible" />
 
-                    <Button
-                        android:id="@+id/elevatedButton"
-                        style="@style/Widget.Material3.Button.IconButton.Filled"
-                        android:backgroundTint="?colorSurfaceContainer"
-                        android:drawableTint="?colorOnSurfaceVariant"
-                        android:layout_width="70dp"
-                        android:layout_height="70dp"
-                        app:icon="@drawable/ic_check" />
-
                 </LinearLayout>
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="end"
+                    android:layoutDirection="rtl"
                     android:orientation="horizontal">
 
                     <Button
-                        style="@style/Widget.Material3.Button.ElevatedButton"
-                        android:tint="?colorSurfaceContainer"
+                        android:id="@+id/textButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Elevated button"
-                        />
+                        android:text="Mark as done"
+                        app:icon="@drawable/ic_check" />
 
                 </LinearLayout>
 
