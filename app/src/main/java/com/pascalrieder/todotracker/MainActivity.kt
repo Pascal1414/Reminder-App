@@ -39,23 +39,6 @@ class MainActivity : AppCompatActivity() {
             val db = AppDatabase.getInstance(applicationContext)
 
             val reminderDao = db.reminderDao()
-            val reminderCheckDao = db.reminderCheckDao()
-
-
-            // Create Reminder entity properly
-            val id = reminderDao.create(
-                Reminder(
-                    name = "Test Reminder",
-                    description = "Test Description"
-                )
-            )
-            reminderCheckDao.create(
-                ReminderCheck(
-                    done = true,
-                    dateTime = LocalDateTime.now(),
-                    reminderId = id
-                )
-            )
 
             val reminders = reminderDao.getAll().toReminders()
             for (reminder in reminders) {
