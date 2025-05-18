@@ -10,7 +10,7 @@ import com.pascalrieder.todotracker.R
 
 class CheckTodoWidgetProvider : AppWidgetProvider() {
     companion object {
-        const val TOGGLE_ACTION = "com.example.TOGGLE_ACTION"
+        const val TOGGLE_ACTION = "com.pascalrieder.TOGGLE_ACTION"
     }
 
     override fun onUpdate(
