@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">TodoTracker</string>
     <string name="activity_main_title">Reminders</string>
+    <string name="fab_description">Create reminder</string>
 </resources>
