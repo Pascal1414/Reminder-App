@@ -9,7 +9,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pascalrieder.todotracker.R
 
 class OverviewFragment : Fragment(R.layout.fragment_overview) {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
     }
 }
