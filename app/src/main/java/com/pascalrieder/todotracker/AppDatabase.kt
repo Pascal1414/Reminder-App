@@ -1,6 +1,8 @@
 package com.pascalrieder.todotracker
 
+import android.content.Context
 import androidx.room.Database
+import androidx.room.Room
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
 import com.pascalrieder.todotracker.converter.Converters
@@ -12,6 +14,17 @@ import com.pascalrieder.todotracker.model.ReminderCheck
 @Database(entities = [Reminder::class, ReminderCheck::class], version = 3)
 @TypeConverters(Converters::class)
 abstract class AppDatabase : RoomDatabase() {
+    companion object {
+        fun getInstance(context: Context): AppDatabase {
+            return Room.databaseBuilder(
+                context,
+                AppDatabase::class.java, "database-name"
+            )
+                .fallbackToDestructiveMigration(true)
+                .build()
+        }
+    }
+
     abstract fun reminderDao(): ReminderDao
     abstract fun reminderCheckDao(): ReminderCheckDao
 }

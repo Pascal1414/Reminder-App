@@ -27,12 +27,7 @@ class MainActivity : AppCompatActivity() {
         DynamicColors.applyToActivitiesIfAvailable(application)
 
         lifecycleScope.launch {
-            val db = Room.databaseBuilder(
-                applicationContext,
-                AppDatabase::class.java, "database-name"
-            )
-                .fallbackToDestructiveMigration(true)
-                .build()
+            val db = AppDatabase.getInstance(applicationContext)
 
             val reminderDao = db.reminderDao()
             val reminderCheckDao = db.reminderCheckDao()
