@@ -8,7 +8,7 @@ import com.pascalrieder.todotracker.model.Reminder
 
 @Dao
 interface ReminderDao {
-    @Query("SELECT * FROM reminder /*inner join remindercheck on reminder.id = remindercheck.reminder_id*/")
+    @Query("SELECT * FROM reminder")
     suspend fun getAll(): List<ReminderWithChecks>
 
     @Insert
