@@ -1,13 +1,12 @@
 package com.pascalrieder.todotracker.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.View
-import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import androidx.core.widget.doOnTextChanged
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView

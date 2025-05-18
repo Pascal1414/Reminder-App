@@ -7,16 +7,12 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.room.Room
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pascalrieder.todotracker.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.todotracker.fragment.CreateReminderFragment
 import com.pascalrieder.todotracker.fragment.OverviewFragment
-import com.pascalrieder.todotracker.model.Reminder
-import com.pascalrieder.todotracker.model.ReminderCheck
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

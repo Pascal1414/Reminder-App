@@ -12,7 +12,7 @@ interface ReminderDao {
     suspend fun getAll(): List<ReminderWithChecks>
 
     @Insert
-    suspend fun create(reminder: Reminder) : Long
+    suspend fun create(reminder: Reminder): Long
 
     companion object {
         fun List<ReminderWithChecks>.toReminders(): List<Reminder> {

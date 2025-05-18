@@ -19,7 +19,7 @@ import java.time.LocalDateTime
     indices = [Index("reminder_id")]
 )
 data class ReminderCheck(
-    @PrimaryKey(autoGenerate = true) val id: Long  = 0,
+    @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "done") val done: Boolean,
     @ColumnInfo(name = "datetime") val dateTime: LocalDateTime,
     @ColumnInfo(name = "reminder_id") val reminderId: Long
