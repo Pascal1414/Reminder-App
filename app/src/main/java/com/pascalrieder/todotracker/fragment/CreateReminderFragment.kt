@@ -3,14 +3,20 @@ package com.pascalrieder.todotracker.fragment
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.View
+import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputLayout
 import com.pascalrieder.todotracker.AppDatabase
 import com.pascalrieder.todotracker.R
+import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
+import com.pascalrieder.todotracker.model.Weekday
 import kotlinx.coroutines.launch
 
 
@@ -20,6 +26,9 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private var createButton: Button? = null
     private var nameEditText: EditText? = null
     private var descriptionEditText: EditText? = null
+    private var intervalEditText: MaterialAutoCompleteTextView? = null
+    private var weekdayEditTextContainer: TextInputLayout? = null
+    private var weekdayEditText: MaterialAutoCompleteTextView? = null
 
     private lateinit var db: AppDatabase
 
@@ -33,13 +42,33 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         createButton = requireActivity().findViewById(R.id.create_reminder_button)
         nameEditText = requireActivity().findViewById(R.id.reminder_name)
         descriptionEditText = requireActivity().findViewById(R.id.reminder_description)
+        intervalEditText = requireActivity().findViewById(R.id.reminder_interval)
+        weekdayEditTextContainer = requireActivity().findViewById(R.id.reminder_weekday_container)
+        weekdayEditText = requireActivity().findViewById(R.id.reminder_weekday)
 
         fab?.hide()
+
+        intervalEditText?.setSimpleItems(Interval.getStringValues().toTypedArray())
+        intervalEditText?.doOnTextChanged { text, _, _, _ ->
+            if (text.toString() == Interval.Daily.toString())
+                hideWeekdayMenu()
+            else
+                showWeekdayMenu()
+        }
+        weekdayEditText?.setSimpleItems(Weekday.getStringValues().toTypedArray())
 
         val createButton = requireActivity().findViewById<Button>(R.id.create_reminder_button)
         createButton.setOnClickListener {
             onCreateClick()
         }
+    }
+
+    private fun showWeekdayMenu() {
+        weekdayEditTextContainer?.visibility = View.VISIBLE
+    }
+
+    private fun hideWeekdayMenu() {
+        weekdayEditTextContainer?.visibility = View.GONE
     }
 
     private fun onCreateClick() = requireActivity().lifecycleScope.launch {
@@ -52,13 +81,36 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         val description =
             descriptionEditText?.text.toString()
 
-        if (name.isEmpty() || description.isEmpty()) {
+        // Get interval
+        val interval =
+            intervalEditText?.text.toString()
+
+        // Get weekday
+        var weekday: String? = null
+        if (interval == Interval.Weekly.toString())
+            weekday = weekdayEditText?.text.toString()
+
+        if (name.isEmpty() || description.isEmpty() || interval.isEmpty()) {
             showError("Please fill in all fields")
             return@launch
         }
 
+        if (interval == Interval.Weekly.toString()) {
+            if (weekday.isNullOrEmpty()) {
+                showError("Please select a weekday")
+                return@launch
+            }
+        }
+
         val reminderDao = db.reminderDao()
-        reminderDao.create(Reminder(name = name, description = description))
+        reminderDao.create(
+            Reminder(
+                name = name,
+                description = description,
+                interval = Interval.valueOf(interval),
+                weekday = weekday?.let { Weekday.valueOf(it) }
+            )
+        )
 
         requireActivity().supportFragmentManager.popBackStack()
 
