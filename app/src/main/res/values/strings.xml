@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">TodoTracker</string>
     <string name="activity_main_title">Reminders</string>
+    <string name="todo_widget_description">A widget to check a todo</string>
 </resources>

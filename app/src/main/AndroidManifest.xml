@@ -21,6 +21,21 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <activity
+            android:name=".widget.CheckTodoWidgetConfigurationActivity"
+            android:exported="true" />
+
+        <receiver android:name=".widget.CheckTodoWidgetProvider"
+            android:exported="false">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/check_todo_widget_provider" />
+        </receiver>
     </application>
+
 
 </manifest>
