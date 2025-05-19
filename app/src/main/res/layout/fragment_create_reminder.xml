@@ -42,7 +42,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:hint="Interval">
+        android:hint="Interval"
+        app:startIconDrawable="@drawable/ic_search_activity">
 
         <AutoCompleteTextView
             android:id="@+id/reminder_interval"
@@ -59,7 +60,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="Weekday"
-        android:visibility="gone">
+        android:visibility="gone"
+        app:startIconDrawable="@drawable/ic_event">
 
         <AutoCompleteTextView
             android:id="@+id/reminder_weekday"
