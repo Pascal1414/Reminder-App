@@ -10,16 +10,26 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
+import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
+import com.google.android.material.timepicker.MaterialTimePicker
+import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
+import com.google.android.material.timepicker.TimeFormat
 import com.pascalrieder.todotracker.AppDatabase
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
 import com.pascalrieder.todotracker.model.Weekday
 import kotlinx.coroutines.launch
+import java.time.LocalTime
 
 
 class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
+
+    companion object{
+        const val TAG = "CreateReminderFragment"
+    }
+
     private var fab: FloatingActionButton? = null
     private var errorMessageTextView: TextView? = null
     private var createButton: Button? = null
@@ -28,6 +38,9 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private var intervalEditText: MaterialAutoCompleteTextView? = null
     private var weekdayEditTextContainer: TextInputLayout? = null
     private var weekdayEditText: MaterialAutoCompleteTextView? = null
+    private var timeEditTextContainer: TextInputLayout? = null
+    private var timeEditText: TextInputEditText? = null
+    private var selectedTime : LocalTime? = null
 
     private lateinit var db: AppDatabase
 
@@ -44,8 +57,14 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         intervalEditText = requireActivity().findViewById(R.id.reminder_interval)
         weekdayEditTextContainer = requireActivity().findViewById(R.id.reminder_weekday_container)
         weekdayEditText = requireActivity().findViewById(R.id.reminder_weekday)
+        timeEditTextContainer = requireActivity().findViewById(R.id.reminder_time_container)
+        timeEditText = requireActivity().findViewById(R.id.reminder_time)
 
         fab?.hide()
+
+        timeEditText?.setOnClickListener {
+            openTimePicker()
+        }
 
         intervalEditText?.setSimpleItems(Interval.getStringValues().toTypedArray())
         intervalEditText?.doOnTextChanged { text, _, _, _ ->
@@ -70,6 +89,22 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         weekdayEditTextContainer?.visibility = View.GONE
     }
 
+    private fun openTimePicker() {
+        val picker =
+            MaterialTimePicker.Builder()
+                .setTimeFormat(TimeFormat.CLOCK_24H)
+                .setInputMode(INPUT_MODE_CLOCK)
+                .setTitleText("Select reminder time")
+                .build()
+
+        picker.show(requireActivity().supportFragmentManager, TAG)
+
+        picker.addOnPositiveButtonClickListener {
+            selectedTime = LocalTime.of(picker.hour, picker.minute)
+            timeEditText?.setText(selectedTime.toString())
+        }
+    }
+
     private fun onCreateClick() = requireActivity().lifecycleScope.launch {
         hideError()
         // Get name
@@ -89,7 +124,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         if (interval == Interval.Weekly.toString())
             weekday = weekdayEditText?.text.toString()
 
-        if (name.isEmpty() || description.isEmpty() || interval.isEmpty()) {
+        if (name.isEmpty() || description.isEmpty() || interval.isEmpty() || selectedTime == null) {
             showError("Please fill in all fields")
             return@launch
         }
@@ -107,7 +142,8 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
                 name = name,
                 description = description,
                 interval = Interval.valueOf(interval),
-                weekday = weekday?.let { Weekday.valueOf(it) }
+                weekday = weekday?.let { Weekday.valueOf(it) },
+                time = selectedTime!!
             )
         )
 
