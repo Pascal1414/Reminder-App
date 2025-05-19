@@ -5,6 +5,7 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -16,6 +17,7 @@ import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
 import com.google.android.material.timepicker.TimeFormat
 import com.pascalrieder.todotracker.AppDatabase
+import com.pascalrieder.todotracker.NotificationHandler
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
@@ -26,7 +28,7 @@ import java.time.LocalTime
 
 class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
-    companion object{
+    companion object {
         const val TAG = "CreateReminderFragment"
     }
 
@@ -40,7 +42,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private var weekdayEditText: MaterialAutoCompleteTextView? = null
     private var timeEditTextContainer: TextInputLayout? = null
     private var timeEditText: TextInputEditText? = null
-    private var selectedTime : LocalTime? = null
+    private var selectedTime: LocalTime? = null
 
     private lateinit var db: AppDatabase
 
@@ -137,15 +139,25 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         }
 
         val reminderDao = db.reminderDao()
-        reminderDao.create(
-            Reminder(
-                name = name,
-                description = description,
-                interval = Interval.valueOf(interval),
-                weekday = weekday?.let { Weekday.valueOf(it) },
-                time = selectedTime!!
-            )
+
+        val reminder = Reminder(
+            name = name,
+            description = description,
+            interval = Interval.valueOf(interval),
+            weekday = weekday?.let { Weekday.valueOf(it) },
+            time = selectedTime!!
         )
+
+        val reminderId = reminderDao.create(reminder)
+
+        val isScheduled =
+            NotificationHandler().scheduleNotification(requireContext(), reminderId, reminder)
+
+        if (!isScheduled) {
+            Toast.makeText(requireContext(), "Failed to schedule notification", Toast.LENGTH_SHORT)
+                .show()
+            return@launch
+        }
 
         requireActivity().supportFragmentManager.popBackStack()
 

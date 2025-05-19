@@ -1,6 +1,10 @@
 package com.pascalrieder.todotracker
 
+import android.app.AlarmManager
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
+import android.provider.Settings
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +34,12 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener(::onFabClick)
 
         navigateToOverview()
+
+        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+        if (!alarmManager.canScheduleExactAlarms()) {
+            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+            startActivity(intent)
+        }
     }
 
     fun onFabClick(view: View) {
