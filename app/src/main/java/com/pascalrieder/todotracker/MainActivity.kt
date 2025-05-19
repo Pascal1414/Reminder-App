@@ -30,17 +30,6 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener(::onFabClick)
 
         navigateToOverview()
-
-        lifecycleScope.launch {
-            val db = AppDatabase.getInstance(applicationContext)
-
-            val reminderDao = db.reminderDao()
-
-            val reminders = reminderDao.getAll().toReminders()
-            for (reminder in reminders) {
-                println("Reminder: ${reminder.name}, ${reminder.description}")
-            }
-        }
     }
 
     fun onFabClick(view: View) {
