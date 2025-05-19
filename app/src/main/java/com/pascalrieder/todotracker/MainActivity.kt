@@ -22,6 +22,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pascalrieder.todotracker.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.todotracker.fragment.CreateReminderFragment
 import com.pascalrieder.todotracker.fragment.OverviewFragment
+import com.pascalrieder.todotracker.fragment.RoomOverviewFragment
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -43,6 +44,7 @@ class MainActivity : AppCompatActivity() {
 
         val fab = findViewById<FloatingActionButton>(R.id.floating_action_button)
         fab.setOnClickListener(::onFabClick)
+        fab.setOnLongClickListener(::onFabLongClick)
 
         navigateToOverview()
 
@@ -59,6 +61,11 @@ class MainActivity : AppCompatActivity() {
         navigateToCreateReminder()
     }
 
+    fun onFabLongClick(view: View) : Boolean {
+        navigateToRoomOverview()
+        return true
+    }
+
     private fun navigateToCreateReminder() {
         val reminderFragment = CreateReminderFragment()
         supportFragmentManager.beginTransaction()
@@ -71,6 +78,14 @@ class MainActivity : AppCompatActivity() {
         val overviewFragment = OverviewFragment()
         supportFragmentManager.beginTransaction()
             .replace(R.id.fragment_container, overviewFragment)
+            .commit()
+    }
+
+    private fun navigateToRoomOverview() {
+        val roomOverviewFragment = RoomOverviewFragment()
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, roomOverviewFragment)
+            .addToBackStack(null)
             .commit()
     }
 
