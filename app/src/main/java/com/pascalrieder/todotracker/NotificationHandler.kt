@@ -5,7 +5,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.pascalrieder.todotracker.broadcastreceiver.NotificationReceiver
+import com.pascalrieder.todotracker.broadcastreceiver.AlarmReceiver
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
 import java.util.Calendar
@@ -21,7 +21,7 @@ class NotificationHandler {
             return false
         }
 
-        val intent = Intent(context, NotificationReceiver::class.java).apply {
+        val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("reminderId", reminderId)
         }
         val pendingIntent = PendingIntent.getBroadcast(

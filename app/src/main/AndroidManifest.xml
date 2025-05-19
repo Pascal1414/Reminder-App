@@ -26,9 +26,9 @@
         </activity>
 
         <receiver
-            android:name=".broadcastreceiver.NotificationReceiver"
-            android:exported="true"
-            android:permission="TODO" />
+            android:name=".broadcastreceiver.AlarmReceiver"
+            android:exported="true" />
+
 
     </application>
 
