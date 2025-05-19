@@ -13,7 +13,7 @@ interface ReminderDao {
     suspend fun getAll(): List<ReminderWithChecks>
 
     @Query("SELECT * FROM reminder WHERE id = :id")
-    suspend fun getById(id: Long): Reminder?
+    suspend fun getById(id: Long): ReminderWithChecks?
 
     @Insert
     suspend fun create(reminder: Reminder): Long
@@ -34,6 +34,19 @@ interface ReminderDao {
                 ).apply {
                     reminderChecks = it.reminderChecks
                 }
+            }
+        }
+
+        fun ReminderWithChecks.toReminder(): Reminder {
+            return Reminder(
+                id = reminder.id,
+                name = reminder.name,
+                description = reminder.description,
+                interval = reminder.interval,
+                weekday = reminder.weekday,
+                time = reminder.time
+            ).also { reminder ->
+                reminder.reminderChecks = reminderChecks
             }
         }
     }
