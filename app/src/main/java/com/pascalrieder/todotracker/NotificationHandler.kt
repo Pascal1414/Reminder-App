@@ -4,6 +4,7 @@ import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import com.pascalrieder.todotracker.broadcastreceiver.NotificationReceiver
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
@@ -15,6 +16,10 @@ class NotificationHandler {
      * @return true if the notification was scheduled successfully, false otherwise.
      */
     fun scheduleNotification(context: Context, reminderId: Long, reminder: Reminder): Boolean {
+
+        if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
+            return false
+        }
 
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("reminderId", reminderId)
