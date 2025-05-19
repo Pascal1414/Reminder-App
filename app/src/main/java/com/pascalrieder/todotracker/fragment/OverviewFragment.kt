@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pascalrieder.todotracker.AppDatabase
+import com.pascalrieder.todotracker.NotificationHandler
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.adapter.ReminderAdapter
 import com.pascalrieder.todotracker.dao.ReminderCheckDao
@@ -42,6 +43,10 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             recyclerView?.layoutManager = LinearLayoutManager(requireContext())
             recyclerView?.adapter =
                 ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
+
+            reminders.forEach { reminder ->
+                NotificationHandler().scheduleNotification(requireContext(), reminder.id, reminder)
+            }
         }
     }
 
@@ -78,6 +83,8 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {
         reminderDao.delete(reminder)
+
+        NotificationHandler().cancelNotification(requireContext(), reminder.id)
 
         val index = reminders.indexOf(reminder)
         if (index != -1) {
