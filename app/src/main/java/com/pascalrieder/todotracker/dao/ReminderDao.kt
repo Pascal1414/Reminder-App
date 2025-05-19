@@ -22,7 +22,8 @@ interface ReminderDao {
                     name = it.reminder.name,
                     description = it.reminder.description,
                     interval = it.reminder.interval,
-                    weekday = it.reminder.weekday
+                    weekday = it.reminder.weekday,
+                    time = it.reminder.time
                 ).apply {
                     reminderChecks = it.reminderChecks
                 }
