@@ -68,7 +68,6 @@ class NotificationHandler {
     fun getPendingIntent(context: Context, reminderId: Long, reminderName: String): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("reminderId", reminderId)
-            putExtra("reminderName", reminderName)
         }
 
         return PendingIntent.getBroadcast(

@@ -6,10 +6,17 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getSystemService
+import com.pascalrieder.todotracker.AppDatabase
 import com.pascalrieder.todotracker.MainActivity
+import com.pascalrieder.todotracker.NotificationHandler
 import com.pascalrieder.todotracker.R
+import com.pascalrieder.todotracker.model.Reminder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -18,40 +25,67 @@ class AlarmReceiver : BroadcastReceiver() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        CoroutineScope(Dispatchers.IO).launch {
+            val notificationId = intent.getLongExtra("reminderId", -1)
 
-        val notificationId = intent.getIntExtra("reminderId", -1)
-        val reminderName = intent.getStringExtra("reminderName")
+            val reminder = getReminder(context, notificationId.toLong())
 
-        val intentMainActivity = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            if (reminder == null) {
+                return@launch
+            }
+
+            val intentMainActivity = Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            val contentIntent =
+                PendingIntent.getActivity(
+                    context,
+                    0,
+                    intentMainActivity,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+
+            val doneClickIntent = Intent(context, NotificationActionReceiver::class.java).apply {
+                action = NotificationActionReceiver.ACTION_DONE
+                putExtra("reminderId", reminder.id)
+            }
+            val doneClickPendingIntent: PendingIntent =
+                PendingIntent.getBroadcast(
+                    context,
+                    0,
+                    doneClickIntent,
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+
+            var notification =
+                NotificationCompat.Builder(context, CHANNEL_ID)
+                    .setContentTitle(reminder.name)
+                    .setSmallIcon(R.drawable.ic_alarm)
+                    .setContentText("Reminder for ${reminder.name}")
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentIntent(contentIntent)
+                    .setOngoing(true)
+                    .addAction(R.drawable.ic_check, "Done", doneClickPendingIntent)
+                    .build()
+
+            val channel = getChannel(context)
+
+            val notificationManager = getSystemService(context, NotificationManager::class.java)!!
+            notificationManager.createNotificationChannel(channel)
+
+            notificationManager.notify(reminder.id.toInt(), notification)
+
+            NotificationHandler().scheduleNotification(
+                context,
+                reminder.id,
+                reminder
+            )
         }
-        val contentIntent =
-            PendingIntent.getActivity(context, 0, intentMainActivity, PendingIntent.FLAG_IMMUTABLE)
+    }
 
-        val doneClickIntent = Intent(context, NotificationActionReceiver::class.java).apply {
-            action = NotificationActionReceiver.ACTION_DONE
-            putExtra("reminderId", notificationId)
-        }
-        val doneClickPendingIntent: PendingIntent =
-            PendingIntent.getBroadcast(context, 0, doneClickIntent, PendingIntent.FLAG_IMMUTABLE)
-
-        var notification =
-            NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle(reminderName)
-                .setSmallIcon(R.drawable.ic_alarm)
-                .setContentText(if (reminderName == null) "Reminder is due" else "Reminder for $reminderName")
-                .setPriority(NotificationCompat.PRIORITY_HIGH)
-                .setContentIntent(contentIntent)
-                .setOngoing(true)
-                .addAction(R.drawable.ic_check, "Done", doneClickPendingIntent)
-                .build()
-
-        val channel = getChannel(context)
-
-        val notificationManager = getSystemService(context, NotificationManager::class.java)!!
-        notificationManager.createNotificationChannel(channel)
-
-        notificationManager.notify(notificationId, notification)
+    private suspend fun getReminder(context: Context, reminderId: Long): Reminder? {
+        val db = AppDatabase.getInstance(context)
+        return db.reminderDao().getById(reminderId)
     }
 
     private fun getChannel(context: Context): NotificationChannel {
