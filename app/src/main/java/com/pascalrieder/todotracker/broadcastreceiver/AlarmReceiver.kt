@@ -20,6 +20,7 @@ class AlarmReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
 
         val notificationId = intent.getIntExtra("reminderId", -1)
+        val reminderName = intent.getStringExtra("reminderName")
 
         val intentMainActivity = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -36,9 +37,9 @@ class AlarmReceiver : BroadcastReceiver() {
 
         var notification =
             NotificationCompat.Builder(context, CHANNEL_ID)
-                .setContentTitle("Reminder")
+                .setContentTitle(reminderName)
                 .setSmallIcon(R.drawable.ic_alarm)
-                .setContentText("")
+                .setContentText(if (reminderName == null) "Reminder is due" else "Reminder for $reminderName")
                 .setPriority(NotificationCompat.PRIORITY_HIGH)
                 .setContentIntent(contentIntent)
                 .setOngoing(true)
@@ -56,7 +57,7 @@ class AlarmReceiver : BroadcastReceiver() {
     private fun getChannel(context: Context): NotificationChannel {
         val name = "Reminder channel"
         val description = "Channel for reminder notifications"
-        val importance = NotificationManager.IMPORTANCE_DEFAULT
+        val importance = NotificationManager.IMPORTANCE_HIGH
 
         val channel = NotificationChannel(CHANNEL_ID, name, importance)
 

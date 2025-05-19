@@ -84,7 +84,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {
         reminderDao.delete(reminder)
 
-        NotificationHandler().cancelNotification(requireContext(), reminder.id)
+        NotificationHandler().cancelNotification(requireContext(), reminder.id, reminder.name)
 
         val index = reminders.indexOf(reminder)
         if (index != -1) {

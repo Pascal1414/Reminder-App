@@ -21,7 +21,7 @@ class NotificationHandler {
             return false
         }
 
-        val pendingIntent = getPendingIntent(context, reminderId)
+        val pendingIntent = getPendingIntent(context, reminderId, reminder.name)
 
         var triggerAt = if (reminder.interval == Interval.Daily) {
             Calendar.getInstance().apply {
@@ -59,15 +59,16 @@ class NotificationHandler {
         return true
     }
 
-    fun cancelNotification(context: Context, reminderId: Long) {
-        val pendingIntent = getPendingIntent(context, reminderId)
+    fun cancelNotification(context: Context, reminderId: Long, reminderName: String) {
+        val pendingIntent = getPendingIntent(context, reminderId, reminderName)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)
     }
 
-    fun getPendingIntent(context: Context, reminderId: Long): PendingIntent {
+    fun getPendingIntent(context: Context, reminderId: Long, reminderName: String): PendingIntent {
         val intent = Intent(context, AlarmReceiver::class.java).apply {
             putExtra("reminderId", reminderId)
+            putExtra("reminderName", reminderName)
         }
 
         return PendingIntent.getBroadcast(
