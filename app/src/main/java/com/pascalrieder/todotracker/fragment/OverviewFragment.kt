@@ -34,7 +34,24 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             reminders = reminderDao.getAll().toReminders().toMutableList()
 
             recyclerView?.layoutManager = LinearLayoutManager(requireContext())
-            recyclerView?.adapter = ReminderAdapter(reminders.toTypedArray())
+            recyclerView?.adapter =
+                ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
         }
+    }
+
+    private fun onDeleteClick(reminder: Reminder) {
+        lifecycleScope.launch {
+            reminderDao.delete(reminder)
+
+            val index = reminders.indexOf(reminder)
+            if (index != -1) {
+                reminders.removeAt(index)
+                recyclerView?.adapter?.notifyItemRemoved(index)
+            }
+        }
+    }
+
+    private fun onDoneClick(reminder: Reminder) {
+        
     }
 }

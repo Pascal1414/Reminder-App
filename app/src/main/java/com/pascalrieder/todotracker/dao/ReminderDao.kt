@@ -1,6 +1,7 @@
 package com.pascalrieder.todotracker.dao
 
 import androidx.room.Dao
+import androidx.room.Delete
 import androidx.room.Insert
 import androidx.room.Query
 import com.pascalrieder.todotracker.dto.ReminderWithChecks
@@ -13,6 +14,9 @@ interface ReminderDao {
 
     @Insert
     suspend fun create(reminder: Reminder): Long
+
+    @Delete
+    suspend fun delete(reminder: Reminder)
 
     companion object {
         fun List<ReminderWithChecks>.toReminders(): List<Reminder> {

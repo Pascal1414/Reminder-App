@@ -8,8 +8,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.model.Reminder
 
-class ReminderAdapter(private val dataSet: Array<Reminder>) :
-    RecyclerView.Adapter<ReminderAdapter.ViewHolder>() {
+class ReminderAdapter(
+    private val dataSet: MutableList<Reminder>,
+    private val onDeleteClick: (Reminder) -> Unit,
+    private val onDoneClick: (Reminder) -> Unit
+) : RecyclerView.Adapter<ReminderAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewName: TextView = view.findViewById(R.id.reminderName)
@@ -30,6 +33,12 @@ class ReminderAdapter(private val dataSet: Array<Reminder>) :
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
         val reminder = dataSet[position]
 
+        viewHolder.buttonDone.setOnClickListener {
+            onDoneClick(reminder)
+        }
+        viewHolder.buttonDelete.setOnClickListener {
+            onDeleteClick(reminder)
+        }
         viewHolder.textViewName.text = reminder.name
         viewHolder.textViewDescription.text = reminder.description
 
