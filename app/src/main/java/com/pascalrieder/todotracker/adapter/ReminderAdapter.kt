@@ -4,7 +4,9 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.button.MaterialButton
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.model.Reminder
 
@@ -14,12 +16,22 @@ class ReminderAdapter(
     private val onDoneClick: (Reminder) -> Unit
 ) : RecyclerView.Adapter<ReminderAdapter.ViewHolder>() {
 
+    companion object {
+        const val ANIMATE_STATUS_CHANGE = "animate status change"
+    }
+
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val textViewName: TextView = view.findViewById(R.id.reminderName)
         val textViewInterval: TextView = view.findViewById(R.id.reminderInterval)
         val textViewDescription: TextView = view.findViewById(R.id.reminderDescription)
-        val buttonDone: TextView = view.findViewById(R.id.reminderDone)
-        val buttonDelete: TextView = view.findViewById(R.id.reminderDelete)
+        val buttonDone: MaterialButton = view.findViewById(R.id.reminderDone)
+        val buttonDelete: MaterialButton = view.findViewById(R.id.reminderDelete)
+
+        fun animateDoneChanged() {
+            buttonDone.animate()
+                .setDuration(300)
+                .start()
+        }
     }
 
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
@@ -28,6 +40,31 @@ class ReminderAdapter(
             .inflate(R.layout.reminder_item, viewGroup, false)
 
         return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(
+        holder: ViewHolder,
+        position: Int,
+        payloads: List<Any?>
+    ) {
+        val reminder = dataSet[position]
+
+        if (payloads.isNotEmpty()) {
+            val payload = payloads[0]
+            if (payload == ANIMATE_STATUS_CHANGE) {
+                if (reminder.isDone()) {
+                    holder.buttonDone.text = "Mark undone"
+                    holder.buttonDone.icon =
+                        ContextCompat.getDrawable(holder.itemView.context, R.drawable.ic_check)
+                } else {
+                    holder.buttonDone.setText(R.string.reminder_done_button_undone_text)
+                    holder.buttonDone.icon = null
+                }
+                holder.animateDoneChanged()
+            }
+        } else {
+            super.onBindViewHolder(holder, position, payloads)
+        }
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {

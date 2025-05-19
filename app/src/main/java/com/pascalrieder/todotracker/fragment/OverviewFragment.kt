@@ -10,16 +10,20 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pascalrieder.todotracker.AppDatabase
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.adapter.ReminderAdapter
+import com.pascalrieder.todotracker.dao.ReminderCheckDao
 import com.pascalrieder.todotracker.dao.ReminderDao
 import com.pascalrieder.todotracker.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.todotracker.model.Reminder
+import com.pascalrieder.todotracker.model.ReminderCheck
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private var recyclerView: RecyclerView? = null
 
     private lateinit var reminderDao: ReminderDao
+    private lateinit var reminderCheckDao: ReminderCheckDao
 
     private var reminders = mutableListOf<Reminder>()
 
@@ -30,6 +34,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
         val db = AppDatabase.getInstance(requireContext())
         reminderDao = db.reminderDao()
+        reminderCheckDao = db.reminderCheckDao()
 
         lifecycleScope.launch {
             reminders = reminderDao.getAll().toReminders().toMutableList()
@@ -53,7 +58,22 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private fun onDoneClick(reminder: Reminder) {
+        updateReminderStatus(!reminder.isDone(), reminder)
+    }
 
+    private fun updateReminderStatus(done: Boolean, reminder: Reminder) = lifecycleScope.launch {
+        val reminderCheck = ReminderCheck(
+            done = done,
+            dateTime = LocalDateTime.now(),
+            reminderId = reminder.id,
+        )
+        reminderCheckDao.create(reminderCheck)
+
+        val index = reminders.indexOf(reminder)
+        if (index != -1) {
+            reminders[index].reminderChecks.add(reminderCheck)
+            recyclerView?.adapter?.notifyItemChanged(index, ReminderAdapter.ANIMATE_STATUS_CHANGE)
+        }
     }
 
     private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {

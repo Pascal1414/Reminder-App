@@ -65,7 +65,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Reminder for taking my weekly for taking my weekly dose of creatine"
+                android:text="This is the description of the reminder."
                 android:textColor="?colorOnSurfaceVariant"
                 android:visibility="visible" />
 
@@ -81,8 +81,7 @@
                 android:id="@+id/reminderDone"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Mark as done"
-                app:icon="@drawable/ic_check" />
+                android:text="@string/reminder_done_button_undone_text" />
 
         </LinearLayout>
 

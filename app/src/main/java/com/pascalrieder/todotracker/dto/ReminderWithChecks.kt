@@ -11,5 +11,5 @@ data class ReminderWithChecks(
         parentColumn = "id",
         entityColumn = "reminder_id"
     )
-    val reminderChecks: List<ReminderCheck>
+    val reminderChecks: MutableList<ReminderCheck>
 )

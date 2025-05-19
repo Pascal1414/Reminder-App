@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Ignore
 import androidx.room.PrimaryKey
+import com.pascalrieder.todotracker.dto.ReminderWithChecks
 import java.time.LocalTime
 
 @Entity
@@ -16,5 +17,10 @@ data class Reminder(
     @ColumnInfo(name = "time") val time: LocalTime,
 ) {
     @Ignore
-    var reminderChecks: List<ReminderCheck> = emptyList()
+    var reminderChecks: MutableList<ReminderCheck> = mutableListOf()
+
+    fun isDone(): Boolean {
+        val latestCheck = reminderChecks.maxByOrNull { check: ReminderCheck -> check.dateTime }
+        return latestCheck?.done == true
+    }
 }
