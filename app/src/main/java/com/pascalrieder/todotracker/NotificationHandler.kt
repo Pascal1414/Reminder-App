@@ -5,9 +5,13 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.util.Log
 import com.pascalrieder.todotracker.broadcastreceiver.AlarmReceiver
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
+import java.time.Instant
+import java.time.LocalDateTime
+import java.time.ZoneId
 import java.util.Calendar
 
 class NotificationHandler {
@@ -51,6 +55,14 @@ class NotificationHandler {
             return false
         }
 
+        Log.i(
+            "NotificationHandler",
+            "Scheduling alarm for reminderId: $reminderId, reminderName: ${reminder.name}, triggerAt: ${
+                Instant.ofEpochMilli(triggerAt)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDateTime()
+            }"
+        )
         alarmManager.setExactAndAllowWhileIdle(
             AlarmManager.RTC_WAKEUP,
             triggerAt,
@@ -60,6 +72,10 @@ class NotificationHandler {
     }
 
     fun cancelNotification(context: Context, reminderId: Long, reminderName: String) {
+        Log.i(
+            "NotificationHandler",
+            "Canceling alarm for reminderId: $reminderId, reminderName: $reminderName"
+        )
         val pendingIntent = getPendingIntent(context, reminderId, reminderName)
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         alarmManager.cancel(pendingIntent)

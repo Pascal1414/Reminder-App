@@ -6,6 +6,7 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -29,13 +30,20 @@ class AlarmReceiver : BroadcastReceiver() {
         CoroutineScope(Dispatchers.IO).launch {
             val notificationId = intent.getLongExtra("reminderId", -1)
 
+            Log.i("AlarmReceiver", "Alarm received for reminderId: $notificationId")
+
             val reminder = getReminder(context, notificationId.toLong())
 
             if (reminder == null) {
+                Log.i("AlarmReceiver", "Invalid reminder id: $notificationId")
                 return@launch
             }
 
             if (!reminder.isDone()) {
+                Log.i(
+                    "AlarmReceiver",
+                    "Reminder is not done, showing notification for reminderId: $notificationId"
+                )
 
                 val intentMainActivity = Intent(context, MainActivity::class.java).apply {
                     flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
@@ -80,7 +88,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
                 notificationManager.notify(reminder.id.toInt(), notification)
 
-            }
+            }else
+                Log.i("AlarmReceiver", "Reminder is already done, not showing notification")
 
             NotificationHandler().scheduleNotification(
                 context,
