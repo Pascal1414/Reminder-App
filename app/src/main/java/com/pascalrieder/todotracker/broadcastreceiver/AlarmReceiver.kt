@@ -15,10 +15,12 @@ import com.pascalrieder.todotracker.MainActivity
 import com.pascalrieder.todotracker.NotificationHandler
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.dao.ReminderDao.Companion.toReminder
+import com.pascalrieder.todotracker.model.Notification
 import com.pascalrieder.todotracker.model.Reminder
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 
 class AlarmReceiver : BroadcastReceiver() {
@@ -88,8 +90,12 @@ class AlarmReceiver : BroadcastReceiver() {
 
                 notificationManager.notify(reminder.id.toInt(), notification)
 
-            }else
+                addNotification(context, reminder.id)
+
+            } else {
+                addNotification(context, reminder.id, true)
                 Log.i("AlarmReceiver", "Reminder is already done, not showing notification")
+            }
 
             NotificationHandler().scheduleNotification(
                 context,
@@ -102,6 +108,20 @@ class AlarmReceiver : BroadcastReceiver() {
     private suspend fun getReminder(context: Context, reminderId: Long): Reminder? {
         val db = AppDatabase.getInstance(context)
         return db.reminderDao().getById(reminderId)?.toReminder()
+    }
+
+    private suspend fun addNotification(
+        context: Context,
+        reminderId: Long,
+        wasAlreadyDone: Boolean = false
+    ) {
+        val db = AppDatabase.getInstance(context)
+        val notification = Notification(
+            reminderId = reminderId,
+            shownAt = LocalDateTime.now(),
+            wasAlreadyDone = wasAlreadyDone
+        )
+        db.notificationDao().create(notification)
     }
 
     private fun getChannel(context: Context): NotificationChannel {

@@ -10,6 +10,7 @@ import com.pascalrieder.todotracker.broadcastreceiver.AlarmReceiver
 import com.pascalrieder.todotracker.model.Interval
 import com.pascalrieder.todotracker.model.Reminder
 import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
 import java.util.Calendar
@@ -19,7 +20,11 @@ class NotificationHandler {
      * Schedules a notification for the given reminder.
      * @return true if the notification was scheduled successfully, false otherwise.
      */
-    fun scheduleNotification(context: Context, reminderId: Long, reminder: Reminder): Boolean {
+    suspend fun scheduleNotification(
+        context: Context,
+        reminderId: Long,
+        reminder: Reminder
+    ): Boolean {
 
         if (context.checkSelfPermission(android.Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED) {
             return false
@@ -40,7 +45,21 @@ class NotificationHandler {
             }.timeInMillis
         }
 
-        if (triggerAt < System.currentTimeMillis()) {
+        val db = AppDatabase.getInstance(context)
+        val today = LocalDate.now()
+        val startOfDay = today.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endOfDay =
+            today.plusDays(1).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli() - 1
+        val notifications =
+            db.notificationDao().getByReminderIdBetweenTimes(reminderId, startOfDay, endOfDay)
+
+        // Adding a time buffer of 10 min to the current time, because the alarm manager is not 100% accurate
+        // Checking if there is already a notification for the same reminder today prevents multiple notifications
+        if (triggerAt < (System.currentTimeMillis() - (10 * 60 * 1000)) || notifications.isNotEmpty()) {
+            Log.i(
+                "NotificationHandler",
+                "Notification for reminderID: $reminderId is rescheduled. ${if (triggerAt < System.currentTimeMillis()) "Trigger time is in the past" else "Notification already exists"}"
+            )
             val intervalMillis = when (reminder.interval) {
                 Interval.Daily -> AlarmManager.INTERVAL_DAY
                 Interval.Weekly -> AlarmManager.INTERVAL_DAY * 7
