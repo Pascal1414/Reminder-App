@@ -58,7 +58,10 @@ class NotificationHandler {
         if (triggerAt < (System.currentTimeMillis() - (10 * 60 * 1000)) || notifications.isNotEmpty()) {
             Log.i(
                 "NotificationHandler",
-                "Notification for reminderID: $reminderId is rescheduled. ${if (triggerAt < System.currentTimeMillis()) "Trigger time is in the past" else "Notification already exists"}"
+                "Notification for reminderID: $reminderId is rescheduled. ${
+                    if (triggerAt < (System.currentTimeMillis() - (10 * 60 * 1000))) "Trigger time is in the past"
+                    else "Notification already exists"
+                }"
             )
             val intervalMillis = when (reminder.interval) {
                 Interval.Daily -> AlarmManager.INTERVAL_DAY
