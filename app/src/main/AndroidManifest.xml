@@ -29,6 +29,9 @@
             android:name=".broadcastreceiver.AlarmReceiver"
             android:exported="true" />
 
+        <receiver
+            android:name=".broadcastreceiver.NotificationActionReceiver"
+            android:exported="true" />
 
     </application>
 
