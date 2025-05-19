@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.pascalrieder.todotracker.AppDatabase
 import com.pascalrieder.todotracker.R
 import com.pascalrieder.todotracker.adapter.ReminderAdapter
@@ -40,18 +41,28 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private fun onDeleteClick(reminder: Reminder) {
-        lifecycleScope.launch {
-            reminderDao.delete(reminder)
-
-            val index = reminders.indexOf(reminder)
-            if (index != -1) {
-                reminders.removeAt(index)
-                recyclerView?.adapter?.notifyItemRemoved(index)
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle("Are you sure?")
+            .setMessage("Do you want to delete the reminder?")
+            .setPositiveButton("Delete") { _, _ ->
+                deleteReminder(reminder)
             }
-        }
+            .setNegativeButton("Cancel") { _, _ ->
+            }
+            .show()
     }
 
     private fun onDoneClick(reminder: Reminder) {
-        
+
+    }
+
+    private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {
+        reminderDao.delete(reminder)
+
+        val index = reminders.indexOf(reminder)
+        if (index != -1) {
+            reminders.removeAt(index)
+            recyclerView?.adapter?.notifyItemRemoved(index)
+        }
     }
 }
