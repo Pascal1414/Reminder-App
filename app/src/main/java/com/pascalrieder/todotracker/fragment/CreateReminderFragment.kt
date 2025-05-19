@@ -1,11 +1,19 @@
 package com.pascalrieder.todotracker.fragment
 
+import android.Manifest
+import android.app.AlarmManager
+import android.content.Context
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresPermission
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -45,6 +53,30 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private var selectedTime: LocalTime? = null
 
     private lateinit var db: AppDatabase
+
+    private val requestPermissionsLauncher: ActivityResultLauncher<Array<String>> =
+        registerForActivityResult(
+            ActivityResultContracts.RequestMultiplePermissions()
+        ) { permissions ->
+            val alarmGranted = permissions[Manifest.permission.SCHEDULE_EXACT_ALARM] == true
+            val notificationGranted =
+                permissions[Manifest.permission.POST_NOTIFICATIONS] == true
+
+            if (alarmGranted && notificationGranted && reminderId != null && reminder != null) {
+                scheduleNotificationAndFinish(reminderId!!, reminder!!)
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    "Notification was not scheduled",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                requireActivity().supportFragmentManager.popBackStack()
+            }
+        }
+
+    private var reminderId: Long? = null
+    private var reminder: Reminder? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -140,7 +172,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
         val reminderDao = db.reminderDao()
 
-        val reminder = Reminder(
+        reminder = Reminder(
             name = name,
             description = description,
             interval = Interval.valueOf(interval),
@@ -148,19 +180,43 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
             time = selectedTime!!
         )
 
-        val reminderId = reminderDao.create(reminder)
+        reminderId = reminderDao.create(reminder!!)
 
+        if (!hasPermissions()) {
+
+            requestPermissionsLauncher.launch(
+                arrayOf(
+                    Manifest.permission.SCHEDULE_EXACT_ALARM,
+                    Manifest.permission.POST_NOTIFICATIONS
+                )
+            )
+        } else {
+            scheduleNotificationAndFinish(reminderId!!, reminder!!)
+        }
+    }
+
+
+    private fun hasPermissions(): Boolean {
+        val alarmManager = requireContext().getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        return alarmManager.canScheduleExactAlarms() &&
+                ContextCompat.checkSelfPermission(
+                    requireContext(),
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) == PackageManager.PERMISSION_GRANTED
+    }
+
+
+    private fun scheduleNotificationAndFinish(reminderId: Long, reminder: Reminder) {
         val isScheduled =
             NotificationHandler().scheduleNotification(requireContext(), reminderId, reminder)
 
         if (!isScheduled) {
-            Toast.makeText(requireContext(), "Failed to schedule notification", Toast.LENGTH_SHORT)
+            Toast.makeText(requireContext(), "Notification was not scheduled", Toast.LENGTH_SHORT)
                 .show()
-            return@launch
         }
 
         requireActivity().supportFragmentManager.popBackStack()
-
     }
 
     private fun showError(message: String) {

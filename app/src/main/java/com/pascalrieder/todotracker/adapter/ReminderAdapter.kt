@@ -83,6 +83,15 @@ class ReminderAdapter(
             "${reminder.interval} at ${reminder.time}"
         else
             "Every ${reminder.weekday} at ${reminder.time}"
+
+        if (reminder.isDone()) {
+            viewHolder.buttonDone.text = "Mark undone"
+            viewHolder.buttonDone.icon =
+                ContextCompat.getDrawable(viewHolder.itemView.context, R.drawable.ic_check)
+        } else {
+            viewHolder.buttonDone.setText(R.string.reminder_done_button_undone_text)
+            viewHolder.buttonDone.icon = null
+        }
     }
 
     override fun getItemCount() = dataSet.size

@@ -1,6 +1,5 @@
 package com.pascalrieder.todotracker
 
-import android.R
 import android.app.AlarmManager
 import android.app.PendingIntent
 import android.content.Context
@@ -16,6 +15,7 @@ class NotificationHandler {
      * @return true if the notification was scheduled successfully, false otherwise.
      */
     fun scheduleNotification(context: Context, reminderId: Long, reminder: Reminder): Boolean {
+
         val intent = Intent(context, NotificationReceiver::class.java).apply {
             putExtra("reminderId", reminderId)
         }
@@ -25,8 +25,6 @@ class NotificationHandler {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
-
-        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
 
         var triggerAt = if (reminder.interval == Interval.Daily) {
             Calendar.getInstance().apply {
@@ -50,16 +48,18 @@ class NotificationHandler {
             triggerAt += intervalMillis
         }
 
-        if (alarmManager.canScheduleExactAlarms()) {
-            alarmManager.setExactAndAllowWhileIdle(
-                AlarmManager.RTC_WAKEUP,
-                triggerAt,
-                pendingIntent
-            )
-            return true
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+
+        if (!alarmManager.canScheduleExactAlarms()) {
+            return false
         }
 
-        return false
+        alarmManager.setExactAndAllowWhileIdle(
+            AlarmManager.RTC_WAKEUP,
+            triggerAt,
+            pendingIntent
+        )
+        return true
     }
 
     fun cancelNotification(context: Context, reminderId: Long) {
