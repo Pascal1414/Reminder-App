@@ -12,6 +12,9 @@ interface ReminderDao {
     @Query("SELECT * FROM reminder")
     suspend fun getAll(): List<ReminderWithChecks>
 
+    @Query("SELECT * FROM reminder WHERE id = :id")
+    suspend fun getById(id: Long): Reminder?
+
     @Insert
     suspend fun create(reminder: Reminder): Long
 
