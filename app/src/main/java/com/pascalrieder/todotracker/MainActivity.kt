@@ -46,7 +46,8 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener(::onFabClick)
         fab.setOnLongClickListener(::onFabLongClick)
 
-        navigateToOverview()
+        if (savedInstanceState == null)
+            navigateToOverview()
 
         val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
         if (!alarmManager.canScheduleExactAlarms()) {
@@ -61,7 +62,7 @@ class MainActivity : AppCompatActivity() {
         navigateToCreateReminder()
     }
 
-    fun onFabLongClick(view: View) : Boolean {
+    fun onFabLongClick(view: View): Boolean {
         navigateToRoomOverview()
         return true
     }
