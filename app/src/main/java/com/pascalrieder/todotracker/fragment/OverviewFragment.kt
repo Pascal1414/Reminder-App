@@ -23,30 +23,40 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private var recyclerView: RecyclerView? = null
 
+    private lateinit var db: AppDatabase
     private lateinit var reminderDao: ReminderDao
     private lateinit var reminderCheckDao: ReminderCheckDao
 
     private var reminders = mutableListOf<Reminder>()
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        // Initialize the Views
         recyclerView = view.findViewById(R.id.reminderRecyclerView)
 
-        val db = AppDatabase.getInstance(requireContext())
-        reminderDao = db.reminderDao()
-        reminderCheckDao = db.reminderCheckDao()
+        // Initialize the database and DAOs
+        db = AppDatabase.getInstance(requireContext()).also {
+            reminderDao = it.reminderDao()
+            reminderCheckDao = it.reminderCheckDao()
+        }
 
-        lifecycleScope.launch {
-            reminders = reminderDao.getAll().toReminders().toMutableList()
+        loadReminders()
 
-            recyclerView?.layoutManager = LinearLayoutManager(requireContext())
-            recyclerView?.adapter =
-                ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
+        scheduleNotifications()
+    }
 
-            reminders.forEach { reminder ->
-                NotificationHandler().scheduleNotification(requireContext(), reminder.id, reminder)
-            }
+    private fun loadReminders() = lifecycleScope.launch {
+        reminders = reminderDao.getAll().toReminders().toMutableList()
+
+        recyclerView?.layoutManager = LinearLayoutManager(requireContext())
+        recyclerView?.adapter = ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
+    }
+
+    private fun scheduleNotifications() = lifecycleScope.launch {
+        reminders.forEach { reminder ->
+            NotificationHandler().scheduleNotification(requireContext(), reminder.id, reminder)
         }
     }
 
