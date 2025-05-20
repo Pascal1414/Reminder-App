@@ -2,6 +2,7 @@ package com.pascalrieder.todotracker.fragment
 
 import android.os.Bundle
 import android.view.View
+import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -22,6 +23,7 @@ import java.time.LocalDateTime
 class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private var recyclerView: RecyclerView? = null
+    private var noRemindersLinearLayout: LinearLayout? = null
 
     private lateinit var db: AppDatabase
     private lateinit var reminderDao: ReminderDao
@@ -35,6 +37,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
         // Initialize the Views
         recyclerView = view.findViewById(R.id.reminderRecyclerView)
+        noRemindersLinearLayout = view.findViewById(R.id.no_reminders)
 
         // Initialize the database and DAOs
         db = AppDatabase.getInstance(requireContext()).also {
@@ -42,19 +45,30 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             reminderCheckDao = it.reminderCheckDao()
         }
 
-        loadReminders()
+        lifecycleScope.launch {
+            loadReminders()
 
-        scheduleNotifications()
+            scheduleNotifications()
+        }
     }
 
-    private fun loadReminders() = lifecycleScope.launch {
+    private fun updateNoRemindersVisibility() {
+        if (reminders.isEmpty()) {
+            noRemindersLinearLayout?.visibility = View.VISIBLE
+            recyclerView?.visibility = View.GONE
+        }
+    }
+
+    private suspend fun loadReminders() {
         reminders = reminderDao.getAll().toReminders().toMutableList()
 
         recyclerView?.layoutManager = LinearLayoutManager(requireContext())
         recyclerView?.adapter = ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
+
+        updateNoRemindersVisibility()
     }
 
-    private fun scheduleNotifications() = lifecycleScope.launch {
+    private suspend fun scheduleNotifications() {
         reminders.forEach { reminder ->
             NotificationHandler().scheduleNotification(requireContext(), reminder.id, reminder)
         }
@@ -101,5 +115,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             reminders.removeAt(index)
             recyclerView?.adapter?.notifyItemRemoved(index)
         }
+
+        updateNoRemindersVisibility()
     }
 }
