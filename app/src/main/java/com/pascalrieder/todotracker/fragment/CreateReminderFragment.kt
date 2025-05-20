@@ -110,16 +110,13 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private fun onCreateClick() = requireActivity().lifecycleScope.launch {
         hideError()
         // Get name
-        val name =
-            nameEditText?.text.toString()
+        val name = nameEditText?.text.toString()
 
         // Get description
-        val description =
-            descriptionEditText?.text.toString()
+        val description = descriptionEditText?.text.toString()
 
         // Get interval
-        val interval =
-            intervalEditText?.text.toString()
+        val interval = intervalEditText?.text.toString()
 
         // Get weekday
         var weekday: String? = null
@@ -160,7 +157,6 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
         requireActivity().supportFragmentManager.popBackStack()
     }
-
 
     private fun showError(message: String) {
         errorMessageTextView?.text = message
