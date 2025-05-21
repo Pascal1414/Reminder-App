@@ -1,4 +1,4 @@
-package com.pascalrieder.todotracker
+package com.pascalrieder.reminder_app
 
 import org.junit.Test
 

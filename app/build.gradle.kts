@@ -1,14 +1,15 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.ksp)
 }
 
 android {
-    namespace = "com.pascalrieder.todotracker"
+    namespace = "com.pascalrieder.reminder_app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pascalrieder.todotracker"
+        applicationId = "com.pascalrieder.reminder_app"
         minSdk = 33
         targetSdk = 35
         versionCode = 1
@@ -45,4 +46,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
+
+    // Room
+    implementation(libs.androidx.room.runtime)
+    ksp(libs.androidx.room.compiler)
 }
