@@ -1,11 +1,14 @@
 package com.pascalrieder.reminder_app.widget
 
+import android.appwidget.AppWidgetManager
+import android.content.Context
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.edit
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -19,6 +22,7 @@ import com.pascalrieder.reminder_app.dao.ReminderDao
 import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.reminder_app.model.Reminder
 import kotlinx.coroutines.launch
+
 
 class WidgetConfigActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
@@ -60,13 +64,38 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun onReminderClick(reminder: Reminder) {
-        Log.i("WidgetConfigActivity", "Reminder clicked: ${reminder.id}")
+        val appWidgetId = intent.extras?.getInt(
+            AppWidgetManager.EXTRA_APPWIDGET_ID,
+            AppWidgetManager.INVALID_APPWIDGET_ID
+        )
+        if (appWidgetId == null || appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            Toast.makeText(this, "Failed to get widget ID", Toast.LENGTH_SHORT).show()
+            finish()
+        } else
+            setReminderId(this, appWidgetId, reminder.id)
     }
+
 
     private fun updateNoRemindersVisibility() {
         if (reminders.isEmpty()) {
             noRemindersLinearLayout?.visibility = View.VISIBLE
             recyclerView?.visibility = View.GONE
+        }
+    }
+
+    companion object {
+
+        private const val WIDGET_PREFS = "WidgetPreferences"
+
+        fun setReminderId(context: Context, widgetId: Int, reminderId: Long) {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            prefs.edit { putLong("widget_$widgetId", reminderId) }
+        }
+
+        fun getReminderId(context: Context, widgetId: Int): Long? {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            val reminderId = prefs.getLong("widget_$widgetId", -1)
+            return  if (reminderId == -1L) null else reminderId
         }
     }
 }
