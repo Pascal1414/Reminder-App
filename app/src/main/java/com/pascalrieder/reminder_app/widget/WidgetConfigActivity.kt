@@ -70,8 +70,10 @@ class WidgetConfigActivity : AppCompatActivity() {
         )
         if (appWidgetId == null || appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             Toast.makeText(this, "Failed to get widget ID", Toast.LENGTH_SHORT).show()
-        } else
+        } else {
             setReminderId(this, appWidgetId, reminder.id)
+            WidgetProvider.updateWidget(this, AppWidgetManager.getInstance(this), appWidgetId, reminder)
+        }
 
         finish()
     }
@@ -96,7 +98,7 @@ class WidgetConfigActivity : AppCompatActivity() {
         fun getReminderId(context: Context, widgetId: Int): Long? {
             val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
             val reminderId = prefs.getLong("widget_$widgetId", -1)
-            return  if (reminderId == -1L) null else reminderId
+            return if (reminderId == -1L) null else reminderId
         }
     }
 }
