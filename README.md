@@ -1,4 +1,4 @@
-# TodoTracker
+# Reminder App
 
 ## Room Database
 

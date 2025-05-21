@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.pascalrieder.todotracker"
+    namespace = "com.pascalrieder.reminder_app"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.pascalrieder.todotracker"
+        applicationId = "com.pascalrieder.reminder_app"
         minSdk = 33
         targetSdk = 35
         versionCode = 1

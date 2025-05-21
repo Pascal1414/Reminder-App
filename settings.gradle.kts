@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "TodoTracker"
+rootProject.name = "Reminder App"
 include(":app")
  
