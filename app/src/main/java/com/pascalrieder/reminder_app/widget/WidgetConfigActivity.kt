@@ -70,9 +70,10 @@ class WidgetConfigActivity : AppCompatActivity() {
         )
         if (appWidgetId == null || appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             Toast.makeText(this, "Failed to get widget ID", Toast.LENGTH_SHORT).show()
-            finish()
         } else
             setReminderId(this, appWidgetId, reminder.id)
+
+        finish()
     }
 
 
