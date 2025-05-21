@@ -8,7 +8,7 @@ import android.content.Intent
 import android.widget.RemoteViews
 import com.pascalrieder.reminder_app.R
 
-class CheckReminderWidgetProvider : AppWidgetProvider() {
+class WidgetProvider : AppWidgetProvider() {
     companion object {
         const val TOGGLE_ACTION = "com.pascalrieder.TOGGLE_ACTION"
     }
@@ -19,9 +19,9 @@ class CheckReminderWidgetProvider : AppWidgetProvider() {
         appWidgetIds: IntArray
     ) {
         appWidgetIds.forEach { appWidgetId ->
-            val views = RemoteViews(context.packageName, R.layout.widget_check_reminder)
+            val views = RemoteViews(context.packageName, R.layout.widget)
 
-            val intent = Intent(context, CheckReminderWidgetProvider::class.java).apply {
+            val intent = Intent(context, WidgetProvider::class.java).apply {
                 action = TOGGLE_ACTION
             }
 

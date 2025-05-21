@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/check_reminder_widget_configuration"
+    android:id="@+id/widget_config"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -12,14 +12,14 @@
         android:orientation="vertical">
 
         <TextView
-            style="?textAppearanceDisplaySmall"
+            style="?textAppearanceTitleLarge"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:text="Select Reminder for Widget" />
+            android:text="Select Reminder for Widget:" />
 
         <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/widget_config_recyclerView"
+            android:id="@+id/recycler_view"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center" />
@@ -27,7 +27,7 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/widget_config_no_reminders"
+        android:id="@+id/no_reminders_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_marginBottom="190dp"

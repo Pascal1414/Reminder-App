@@ -1,6 +1,7 @@
 package com.pascalrieder.reminder_app.widget
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.LinearLayout
 import androidx.activity.enableEdgeToEdge
@@ -19,7 +20,7 @@ import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.reminder_app.model.Reminder
 import kotlinx.coroutines.launch
 
-class CheckReminderWidgetConfigurationActivity : AppCompatActivity() {
+class WidgetConfigActivity : AppCompatActivity() {
     private lateinit var db: AppDatabase
     private lateinit var reminderDao: ReminderDao
 
@@ -31,37 +32,35 @@ class CheckReminderWidgetConfigurationActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        setContentView(R.layout.activity_check_reminder_widget_configuration)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.check_reminder_widget_configuration)) { v, insets ->
+        setContentView(R.layout.activity_widget_config)
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.widget_config)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
         DynamicColors.applyToActivitiesIfAvailable(application)
 
-        recyclerView = findViewById(R.id.widget_config_recyclerView)
-        noRemindersLinearLayout = findViewById(R.id.widget_config_no_reminders)
+        recyclerView = findViewById(R.id.recycler_view)
+        noRemindersLinearLayout = findViewById(R.id.no_reminders_container)
 
         db = AppDatabase.getInstance(this).also {
             reminderDao = it.reminderDao()
         }
 
-        lifecycleScope.launch {
-            loadReminders()
-        }
+        loadReminders()
     }
 
-    private suspend fun loadReminders() {
+    private fun loadReminders() = lifecycleScope.launch {
         reminders = reminderDao.getAll().toReminders().toMutableList()
 
-        recyclerView?.layoutManager = LinearLayoutManager(this)
+        recyclerView?.layoutManager = LinearLayoutManager(this@WidgetConfigActivity)
         recyclerView?.adapter = ConfigureReminderWidgetAdapter(reminders, ::onReminderClick)
 
         updateNoRemindersVisibility()
     }
 
     private fun onReminderClick(reminder: Reminder) {
-
+        Log.i("WidgetConfigActivity", "Reminder clicked: ${reminder.id}")
     }
 
     private fun updateNoRemindersVisibility() {

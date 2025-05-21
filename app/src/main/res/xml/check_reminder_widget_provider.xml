@@ -3,9 +3,9 @@
     android:targetCellWidth="1"
     android:targetCellHeight="1"
     android:description="@string/reminder_widget_description"
-    android:previewLayout="@layout/widget_check_reminder"
+    android:previewLayout="@layout/widget"
     android:initialLayout="@layout/widget_initial_layout"
-    android:configure="com.pascalrieder.reminder_app.widget.CheckReminderWidgetConfigurationActivity"
+    android:configure="com.pascalrieder.reminder_app.widget.WidgetConfigActivity"
     android:resizeMode="none"
     android:widgetCategory="home_screen"
     android:widgetFeatures="reconfigurable|configuration_optional">

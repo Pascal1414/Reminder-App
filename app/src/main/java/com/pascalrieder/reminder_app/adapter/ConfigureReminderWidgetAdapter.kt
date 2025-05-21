@@ -23,7 +23,7 @@ class ConfigureReminderWidgetAdapter(
     override fun onCreateViewHolder(viewGroup: ViewGroup, viewType: Int): ViewHolder {
 
         val view = LayoutInflater.from(viewGroup.context)
-            .inflate(R.layout.widget_reminder, viewGroup, false)
+            .inflate(R.layout.widget_config_item, viewGroup, false)
 
         return ViewHolder(view)
     }
