@@ -2,11 +2,8 @@ package com.pascalrieder.todotracker
 
 import android.Manifest
 import android.app.AlarmManager
-import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
 import android.view.View
@@ -14,18 +11,19 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.DynamicColors
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.pascalrieder.todotracker.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.todotracker.fragment.CreateReminderFragment
 import com.pascalrieder.todotracker.fragment.OverviewFragment
 import com.pascalrieder.todotracker.fragment.RoomOverviewFragment
-import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
+
+    private lateinit var alarmManager: AlarmManager
 
     private val requestNotificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -42,18 +40,14 @@ class MainActivity : AppCompatActivity() {
         }
         DynamicColors.applyToActivitiesIfAvailable(application)
 
+        alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
+
         val fab = findViewById<FloatingActionButton>(R.id.floating_action_button)
         fab.setOnClickListener(::onFabClick)
         fab.setOnLongClickListener(::onFabLongClick)
 
         if (savedInstanceState == null)
             navigateToOverview()
-
-        val alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
-        if (!alarmManager.canScheduleExactAlarms()) {
-            val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            startActivity(intent)
-        }
 
         checkAndRequestPermissions()
     }
@@ -91,20 +85,33 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun checkAndRequestPermissions() {
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.POST_NOTIFICATIONS
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
+        if (!canPostNotifications() || !alarmManager.canScheduleExactAlarms())
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.ic_mark_email_unread)
+                .setTitle("Permissions required")
+                .setMessage("The App is missing one or more permissions that allow the app to send you reminders at exact times.")
+                .setPositiveButton("Ok") { _, _ ->
+                    requestPermissions()
+                }
+                .show()
+    }
+
+    private fun canPostNotifications(): Boolean {
+        return ContextCompat.checkSelfPermission(
+            this,
+            Manifest.permission.POST_NOTIFICATIONS
+        ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    private fun requestPermissions() {
+        if (!canPostNotifications()) {
             requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-
-        val alarmManager =
-            getSystemService(ALARM_SERVICE) as AlarmManager
         if (!alarmManager.canScheduleExactAlarms()) {
             val intent = Intent(Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
-            intent.setData(Uri.fromParts("package", packageName, null))
+            intent.setData(("package:$packageName").toUri())
+            startActivity(intent)
         }
     }
 }
