@@ -2,7 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/widget_check_todo">
+    android:id="@+id/widget_check_reminder">
 
     <ImageView
         android:layout_width="match_parent"

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">Reminder-App</string>
     <string name="activity_main_title">Reminders</string>
-    <string name="todo_widget_description">A widget to check a todo</string>
+    <string name="reminder_widget_description">A widget to check a reminder</string>
     <string name="fab_description">Create reminder</string>
     <string name="reminder_done_button_undone_text">Mark as done</string>
 </resources>

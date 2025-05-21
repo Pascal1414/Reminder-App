@@ -2,10 +2,10 @@
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:targetCellWidth="1"
     android:targetCellHeight="1"
-    android:description="@string/todo_widget_description"
-    android:previewLayout="@layout/widget_check_todo"
+    android:description="@string/reminder_widget_description"
+    android:previewLayout="@layout/widget_check_reminder"
     android:initialLayout="@layout/widget_initial_layout"
-    android:configure="com.pascalrieder.todotracker.widget.CheckTodoWidgetConfigurationActivity"
+    android:configure="com.pascalrieder.reminder_app.widget.CheckReminderWidgetConfigurationActivity"
     android:resizeMode="none"
     android:widgetCategory="home_screen"
     android:widgetFeatures="reconfigurable|configuration_optional">
