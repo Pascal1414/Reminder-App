@@ -107,7 +107,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         }
     }
 
-    private fun onCreateClick() = requireActivity().lifecycleScope.launch {
+    private fun onCreateClick() {
         hideError()
         // Get name
         val name = nameEditText?.text.toString()
@@ -123,15 +123,25 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
         if (interval == Interval.Weekly.toString())
             weekday = weekdayEditText?.text.toString()
 
-        if (name.isEmpty() || description.isEmpty() || interval.isEmpty() || selectedTime == null) {
-            showError("Please fill in all fields")
-            return@launch
+        val errorMessage = if (name.isEmpty()) {
+            "Please enter a name"
+        } else if (interval.isEmpty()) {
+            "Please select an interval"
+        } else if (selectedTime == null) {
+            "Please select a time"
+        } else {
+            null
+        }
+
+        if (errorMessage != null) {
+            showError(errorMessage)
+            return
         }
 
         if (interval == Interval.Weekly.toString()) {
             if (weekday.isNullOrEmpty()) {
                 showError("Please select a weekday")
-                return@launch
+                return
             }
         }
 
@@ -139,23 +149,29 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
         val reminder = Reminder(
             name = name,
-            description = description,
+            description = if (description.isEmpty()) null else description,
             interval = Interval.valueOf(interval),
             weekday = weekday?.let { Weekday.valueOf(it) },
             time = selectedTime!!
         )
 
-        val reminderId = reminderDao.create(reminder)
+        requireActivity().lifecycleScope.launch {
 
-        val isScheduled =
-            NotificationHandler().scheduleNotification(requireContext(), reminderId, reminder)
+            val reminderId = reminderDao.create(reminder)
 
-        if (!isScheduled) {
-            Toast.makeText(requireContext(), "Notification was not scheduled", Toast.LENGTH_SHORT)
-                .show()
+            val isScheduled =
+                NotificationHandler().scheduleNotification(requireContext(), reminderId, reminder)
+
+            if (!isScheduled) {
+                Toast.makeText(
+                    requireContext(),
+                    "Notification was not scheduled",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+
+            requireActivity().supportFragmentManager.popBackStack()
         }
-
-        requireActivity().supportFragmentManager.popBackStack()
     }
 
     private fun showError(message: String) {

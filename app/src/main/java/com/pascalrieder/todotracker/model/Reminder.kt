@@ -11,7 +11,7 @@ import java.time.LocalTime
 data class Reminder(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
     @ColumnInfo(name = "name") val name: String,
-    @ColumnInfo(name = "description") val description: String,
+    @ColumnInfo(name = "description") val description: String? = null,
     @ColumnInfo(name = "interval") val interval: Interval,
     @ColumnInfo(name = "weekday") val weekday: Weekday? = null,
     @ColumnInfo(name = "time") val time: LocalTime,

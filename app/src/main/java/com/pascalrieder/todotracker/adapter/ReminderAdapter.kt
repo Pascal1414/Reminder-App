@@ -77,7 +77,11 @@ class ReminderAdapter(
             onDeleteClick(reminder)
         }
         viewHolder.textViewName.text = reminder.name
-        viewHolder.textViewDescription.text = reminder.description
+
+        if (reminder.description.isNullOrEmpty())
+            viewHolder.textViewDescription.visibility = View.GONE
+        else
+            viewHolder.textViewDescription.text = reminder.description
 
         viewHolder.textViewInterval.text = if (reminder.weekday == null)
             "${reminder.interval} at ${reminder.time}"
