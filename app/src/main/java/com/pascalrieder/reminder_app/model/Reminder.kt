@@ -22,4 +22,11 @@ data class Reminder(
         val latestCheck = reminderChecks.maxByOrNull { check: ReminderCheck -> check.dateTime }
         return latestCheck?.done == true
     }
+
+    fun getFormattedInterval(): String {
+        return if (weekday == null)
+            "$interval at $time"
+        else
+            "Every $weekday at $time"
+    }
 }

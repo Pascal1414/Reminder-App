@@ -83,10 +83,7 @@ class ReminderAdapter(
         else
             viewHolder.textViewDescription.text = reminder.description
 
-        viewHolder.textViewInterval.text = if (reminder.weekday == null)
-            "${reminder.interval} at ${reminder.time}"
-        else
-            "Every ${reminder.weekday} at ${reminder.time}"
+        viewHolder.textViewInterval.text = reminder.getFormattedInterval()
 
         if (reminder.isDone()) {
             viewHolder.buttonDone.text = "Mark undone"

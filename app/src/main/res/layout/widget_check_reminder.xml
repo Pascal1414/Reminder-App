@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_check_reminder"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:id="@+id/widget_check_reminder">
+    android:layout_height="match_parent">
 
-    <ImageView
+    <TextView
+        style="?textAppearanceDisplayMedium"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:src="@drawable/ic_medication" />
+        android:text="Creating Reminder" />
 
 </LinearLayout>
