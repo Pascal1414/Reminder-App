@@ -25,7 +25,32 @@ data class Reminder(
 
     fun isDone(): Boolean {
         val latestCheck = reminderChecks.maxByOrNull { check: ReminderCheck -> check.dateTime }
-        return latestCheck?.done == true
+
+        if (latestCheck == null) {
+            return false
+        }
+
+        if (interval == Interval.Daily) {
+            // Check if latestCheck was today
+            val currentDate = LocalDate.now()
+            val checkDate = latestCheck.dateTime.toLocalDate()
+            return if (currentDate != checkDate) {
+                false
+            } else {
+                latestCheck.done
+            }
+        } else if (interval == Interval.Weekly && weekday != null) {
+            // Todo
+            return false
+            /*
+            val today = LocalDate.now()
+            val checkDate = latestCheck.dateTime.toLocalDate()
+
+            return latestCheck.done && !checkDate.isBefore(lastDueDate)
+            */
+        } else {
+           return false
+        }
     }
 
     fun getFormattedInterval(): String {
