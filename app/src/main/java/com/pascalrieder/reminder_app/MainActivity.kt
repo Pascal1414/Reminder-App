@@ -30,7 +30,9 @@ class MainActivity : AppCompatActivity() {
     ) { _ -> }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DynamicColors.applyToActivityIfAvailable(this)
         super.onCreate(savedInstanceState)
+
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
@@ -38,7 +40,6 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        DynamicColors.applyToActivitiesIfAvailable(application)
 
         alarmManager = getSystemService(ALARM_SERVICE) as AlarmManager
 
