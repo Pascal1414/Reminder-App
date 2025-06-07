@@ -8,7 +8,7 @@ import androidx.room.TypeConverters
 import com.pascalrieder.reminder_app.converter.IntervalConverters
 import com.pascalrieder.reminder_app.converter.LocalDateTimeConverters
 import com.pascalrieder.reminder_app.converter.LocalTimeConverter
-import com.pascalrieder.reminder_app.converter.WeekdayConverters
+import com.pascalrieder.reminder_app.converter.DayOfWeekConverter
 import com.pascalrieder.reminder_app.dao.NotificationDao
 import com.pascalrieder.reminder_app.dao.ReminderCheckDao
 import com.pascalrieder.reminder_app.dao.ReminderDao
@@ -16,11 +16,11 @@ import com.pascalrieder.reminder_app.model.Notification
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.model.ReminderCheck
 
-@Database(entities = [Reminder::class, ReminderCheck::class, Notification::class], version = 6)
+@Database(entities = [Reminder::class, ReminderCheck::class, Notification::class], version = 7)
 @TypeConverters(
     LocalDateTimeConverters::class,
     IntervalConverters::class,
-    WeekdayConverters::class,
+    DayOfWeekConverter::class,
     LocalTimeConverter::class
 )
 abstract class AppDatabase : RoomDatabase() {

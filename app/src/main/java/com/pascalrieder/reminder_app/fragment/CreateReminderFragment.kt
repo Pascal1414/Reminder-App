@@ -21,8 +21,8 @@ import com.pascalrieder.reminder_app.NotificationHandler
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.model.Interval
 import com.pascalrieder.reminder_app.model.Reminder
-import com.pascalrieder.reminder_app.model.Weekday
 import kotlinx.coroutines.launch
+import java.time.DayOfWeek
 import java.time.LocalTime
 
 
@@ -75,7 +75,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
             else
                 showWeekdayMenu()
         }
-        weekdayEditText?.setSimpleItems(Weekday.getStringValues().toTypedArray())
+        weekdayEditText?.setSimpleItems(DayOfWeek.entries.map { it.name }.toTypedArray())
 
         val createButton = requireActivity().findViewById<Button>(R.id.create_reminder_button)
         createButton.setOnClickListener {
@@ -151,7 +151,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
             name = name,
             description = if (description.isEmpty()) null else description,
             interval = Interval.valueOf(interval),
-            weekday = weekday?.let { Weekday.valueOf(it) },
+            weekday = weekday?.let { DayOfWeek.valueOf(it) },
             time = selectedTime!!
         )
 
