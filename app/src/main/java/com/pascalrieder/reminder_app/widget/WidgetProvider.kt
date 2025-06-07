@@ -10,6 +10,7 @@ import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.widget.RemoteViews
+import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
@@ -37,8 +38,11 @@ class WidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget)
 
             // Update views
-            val lines: List<Bitmap> = reminder.name.split(" ").map { word ->
-                createBitmapWithCustomFont(context, word)
+            val lines: List<Bitmap> = reminder.name.split(" ").mapNotNull { word ->
+                if (word.isNotEmpty())
+                    createBitmapWithCustomFont(context, word)
+                else
+                    null
             }
             val bitmap = combineLineBitmapsVertically(lines)
 
@@ -76,7 +80,7 @@ class WidgetProvider : AppWidgetProvider() {
 
         fun createBitmapWithCustomFont(context: Context, text: String): Bitmap {
             val paint = Paint(Paint.ANTI_ALIAS_FLAG)
-            paint.textSize = 500f // A large number so that the text fills the bitmap
+            paint.textSize = 100f // A large number so that the text fills the bitmap
             paint.color = Color.WHITE
             paint.typeface = ResourcesCompat.getFont(context, R.font.doto)
 
