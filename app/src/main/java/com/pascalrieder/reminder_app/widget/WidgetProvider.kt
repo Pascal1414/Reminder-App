@@ -36,6 +36,8 @@ class WidgetProvider : AppWidgetProvider() {
 
             if (reminder.isDone())
                 views.setInt(R.id.widget_reminder, "setBackgroundColor", "#2196F3".toColorInt())
+            else
+                views.setInt(R.id.widget_reminder, "setBackgroundColor", "#FF0000".toColorInt())
 
             setOnClickReceiver(context, views)
 
