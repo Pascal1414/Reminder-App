@@ -5,8 +5,12 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.Paint
 import android.widget.RemoteViews
+import androidx.core.content.res.ResourcesCompat
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminder
@@ -15,6 +19,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import androidx.core.graphics.toColorInt
+import androidx.core.graphics.createBitmap
 
 class WidgetProvider : AppWidgetProvider() {
     companion object {
@@ -32,7 +37,12 @@ class WidgetProvider : AppWidgetProvider() {
             val views = RemoteViews(context.packageName, R.layout.widget)
 
             // Update views
-            views.setTextViewText(R.id.widget_check_reminder_text, reminder.id.toString())
+            val lines: List<Bitmap> = reminder.name.split(" ").map { word ->
+                createBitmapWithCustomFont(context, word)
+            }
+            val bitmap = combineLineBitmapsVertically(lines)
+
+            views.setImageViewBitmap(R.id.widget_image_view_name, bitmap)
 
             if (reminder.isDone())
                 views.setInt(R.id.widget_reminder, "setBackgroundColor", "#2196F3".toColorInt())
@@ -62,6 +72,40 @@ class WidgetProvider : AppWidgetProvider() {
             )
 
             views.setOnClickPendingIntent(R.id.widget_reminder, pendingIntent)
+        }
+
+        fun createBitmapWithCustomFont(context: Context, text: String): Bitmap {
+            val paint = Paint(Paint.ANTI_ALIAS_FLAG)
+            paint.textSize = 500f // A large number so that the text fills the bitmap
+            paint.color = Color.WHITE
+            paint.typeface = ResourcesCompat.getFont(context, R.font.doto)
+
+            val width = paint.measureText(text).toInt()
+            val height = (paint.fontMetrics.bottom - paint.fontMetrics.top).toInt()
+
+            val bitmap = createBitmap(width, height)
+            val canvas = Canvas(bitmap)
+            canvas.drawText(text, 0f, -paint.fontMetrics.ascent, paint)
+
+            return bitmap
+        }
+
+        fun combineLineBitmapsVertically(lines: List<Bitmap>): Bitmap {
+            if (lines.isEmpty()) throw IllegalArgumentException("No bitmaps to combine")
+
+            val width = lines.maxOf { it.width }
+            val totalHeight = lines.sumOf { it.height }
+
+            val result = createBitmap(width, totalHeight)
+            val canvas = Canvas(result)
+
+            var yOffset = 0
+            for (line in lines) {
+                canvas.drawBitmap(line, 0f, yOffset.toFloat(), null)
+                yOffset += line.height
+            }
+
+            return result
         }
     }
 
