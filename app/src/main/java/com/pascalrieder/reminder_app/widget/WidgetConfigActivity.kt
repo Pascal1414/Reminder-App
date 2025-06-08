@@ -99,9 +99,13 @@ class WidgetConfigActivity : AppCompatActivity() {
         theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
         val colorOnSurface = typedValue.data
 
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceVariant, typedValue, true)
+        val colorSurfaceVariant = typedValue.data
+
         prefs.edit(commit = true) {
             putInt("colorSurface", colorSurface)
             putInt("colorOnSurface", colorOnSurface)
+            putInt("colorSurfaceVariant", colorSurfaceVariant)
         }
     }
 

@@ -55,7 +55,7 @@ class WidgetProvider : AppWidgetProvider() {
             if (reminder.isDone()) {
                 views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurface)
             } else {
-                views.setInt(R.id.widget_reminder, "setBackgroundColor", "#FF0000".toColorInt())
+                views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurfaceVariant)
             }
 
             setOnClickReceiver(context, views)
@@ -83,7 +83,7 @@ class WidgetProvider : AppWidgetProvider() {
             views.setOnClickPendingIntent(R.id.widget_reminder, pendingIntent)
         }
 
-        fun createBitmapWithCustomFont(context: Context, text: String, textColor : Int): Bitmap {
+        fun createBitmapWithCustomFont(context: Context, text: String, textColor: Int): Bitmap {
             val paint = Paint(Paint.ANTI_ALIAS_FLAG)
             paint.textSize = 100f // A large number so that the text fills the bitmap
             paint.color = textColor
@@ -154,7 +154,8 @@ class WidgetProvider : AppWidgetProvider() {
 
     class WidgetColors(
         val colorSurface: Int,
-        val colorOnSurface: Int
+        val colorOnSurface: Int,
+        val colorSurfaceVariant: Int
     ) {
         companion object {
             fun loadFromPreferences(context: Context): WidgetColors {
@@ -164,7 +165,8 @@ class WidgetProvider : AppWidgetProvider() {
                 )
                 return WidgetColors(
                     colorSurface = prefs.getInt("colorSurface", Color.BLACK),
-                    colorOnSurface = prefs.getInt("colorOnSurface", Color.WHITE)
+                    colorOnSurface = prefs.getInt("colorOnSurface", Color.WHITE),
+                    colorSurfaceVariant = prefs.getInt("colorSurfaceVariant", Color.GRAY)
                 )
             }
         }
