@@ -3,13 +3,14 @@
     android:id="@+id/widget_reminder"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:gravity="center_vertical">
+    android:gravity="center_vertical"
+    android:orientation="vertical">
 
     <ImageView
-        android:layout_marginHorizontal="16dp"
         android:id="@+id/widget_image_view_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginHorizontal="16dp"
         android:contentDescription="Reminder title">
 
     </ImageView>

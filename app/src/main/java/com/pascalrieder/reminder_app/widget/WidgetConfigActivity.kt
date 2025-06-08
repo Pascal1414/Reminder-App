@@ -3,6 +3,7 @@ package com.pascalrieder.reminder_app.widget
 import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.os.Bundle
+import android.util.TypedValue
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.Toast
@@ -15,6 +16,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.DynamicColors
+import com.google.android.material.color.MaterialColors
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.adapter.ConfigureReminderWidgetAdapter
@@ -25,6 +27,7 @@ import kotlinx.coroutines.launch
 
 
 class WidgetConfigActivity : AppCompatActivity() {
+
     private lateinit var db: AppDatabase
     private lateinit var reminderDao: ReminderDao
 
@@ -34,15 +37,18 @@ class WidgetConfigActivity : AppCompatActivity() {
     private var noRemindersLinearLayout: LinearLayout? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        DynamicColors.applyToActivityIfAvailable(this)
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        saveThemeColorsForWidget()
+
         setContentView(R.layout.activity_widget_config)
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.widget_config)) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        DynamicColors.applyToActivitiesIfAvailable(application)
 
         recyclerView = findViewById(R.id.recycler_view)
         noRemindersLinearLayout = findViewById(R.id.no_reminders_container)
@@ -72,12 +78,32 @@ class WidgetConfigActivity : AppCompatActivity() {
             Toast.makeText(this, "Failed to get widget ID", Toast.LENGTH_SHORT).show()
         } else {
             setReminderId(this, appWidgetId, reminder.id)
-            WidgetProvider.updateWidget(this, AppWidgetManager.getInstance(this), appWidgetId, reminder)
+            WidgetProvider.updateWidget(
+                this,
+                AppWidgetManager.getInstance(this),
+                appWidgetId,
+                reminder
+            )
         }
 
         finish()
     }
 
+    private fun saveThemeColorsForWidget() {
+        val prefs = getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+
+        val typedValue = TypedValue()
+        theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true)
+        val colorSurface = typedValue.data
+
+        theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
+        val colorOnSurface = typedValue.data
+
+        prefs.edit(commit = true) {
+            putInt("colorSurface", colorSurface)
+            putInt("colorOnSurface", colorOnSurface)
+        }
+    }
 
     private fun updateNoRemindersVisibility() {
         if (reminders.isEmpty()) {
@@ -88,7 +114,7 @@ class WidgetConfigActivity : AppCompatActivity() {
 
     companion object {
 
-        private const val WIDGET_PREFS = "WidgetPreferences"
+        const val WIDGET_PREFS = "WidgetPreferences"
 
         fun setReminderId(context: Context, widgetId: Int, reminderId: Long) {
             val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
