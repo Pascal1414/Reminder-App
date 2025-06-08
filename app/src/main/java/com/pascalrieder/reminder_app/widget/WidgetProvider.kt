@@ -12,19 +12,21 @@ import android.graphics.Paint
 import android.widget.RemoteViews
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
-import androidx.core.graphics.toColorInt
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminder
 import com.pascalrieder.reminder_app.model.Reminder
+import com.pascalrieder.reminder_app.model.ReminderCheck
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 
 
 class WidgetProvider : AppWidgetProvider() {
     companion object {
-        const val TOGGLE_ACTION = "com.pascalrieder.TOGGLE_ACTION"
+        const val TOGGLE_ACTION = "TOGGLE_ACTION"
+        const val EXTRA_APPWIDGET_ID = "EXTRA_APPWIDGET_ID"
 
         fun updateWidget(
             context: Context,
@@ -51,14 +53,13 @@ class WidgetProvider : AppWidgetProvider() {
 
             views.setImageViewBitmap(R.id.widget_image_view_name, bitmap)
 
-
             if (reminder.isDone()) {
                 views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurface)
             } else {
                 views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurfaceVariant)
             }
 
-            setOnClickReceiver(context, views)
+            setOnClickReceiver(context, views, appWidgetId)
 
             // Has to be called after setting up the view
             appWidgetManager.updateAppWidget(appWidgetId, views)
@@ -67,10 +68,12 @@ class WidgetProvider : AppWidgetProvider() {
         private fun setOnClickReceiver(
             context: Context,
             views: RemoteViews,
+            appWidgetId: Int
         ) {
 
             val intent = Intent(context, WidgetProvider::class.java).apply {
                 action = TOGGLE_ACTION
+                putExtra(EXTRA_APPWIDGET_ID, appWidgetId)
             }
 
             val pendingIntent = PendingIntent.getBroadcast(
@@ -149,6 +152,38 @@ class WidgetProvider : AppWidgetProvider() {
 
         if (intent.action == TOGGLE_ACTION) {
             // TODO: Toggle the reminder state
+            val appWidgetId = intent.getIntExtra(EXTRA_APPWIDGET_ID, -1)
+            if (appWidgetId == -1) return
+
+            // Get Reminder Id
+            val reminderId = WidgetConfigActivity.getReminderId(context, appWidgetId)
+
+            if (reminderId == null)
+                return
+
+
+            CoroutineScope(Dispatchers.IO).launch {
+
+                val appDatabase = AppDatabase.getInstance(context)
+                val reminder =
+                    appDatabase.reminderDao().getById(reminderId)?.toReminder()
+
+                if (reminder == null) {
+                    return@launch
+                }
+
+                val reminderCheck = ReminderCheck(
+                    done = !reminder.isDone(),
+                    dateTime = LocalDateTime.now(),
+                    reminderId = reminder.id,
+                )
+
+                appDatabase.reminderCheckDao().create(reminderCheck)
+
+                reminder.reminderChecks.add(reminderCheck)
+
+                updateWidget(context, AppWidgetManager.getInstance(context), appWidgetId, reminder)
+            }
         }
     }
 
