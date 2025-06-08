@@ -1,5 +1,6 @@
 package com.pascalrieder.reminder_app.fragment
 
+import android.appwidget.AppWidgetManager
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
@@ -17,6 +18,8 @@ import com.pascalrieder.reminder_app.dao.ReminderDao
 import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.model.ReminderCheck
+import com.pascalrieder.reminder_app.widget.WidgetConfigActivity
+import com.pascalrieder.reminder_app.widget.WidgetProvider.Companion.updateWidget
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
 
@@ -102,6 +105,16 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
         if (index != -1) {
             reminders[index].reminderChecks.add(reminderCheck)
             recyclerView?.adapter?.notifyItemChanged(index, ReminderAdapter.ANIMATE_STATUS_CHANGE)
+
+            WidgetConfigActivity.getWidgetIds(requireContext(), reminder.id)
+                .forEach { appWidgetId ->
+                    updateWidget(
+                        requireContext(),
+                        AppWidgetManager.getInstance(context),
+                        appWidgetId,
+                        reminder
+                    )
+                }
         }
     }
 

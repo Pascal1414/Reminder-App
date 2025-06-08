@@ -130,5 +130,13 @@ class WidgetConfigActivity : AppCompatActivity() {
             val reminderId = prefs.getLong("widget_$widgetId", -1)
             return if (reminderId == -1L) null else reminderId
         }
+
+        fun getWidgetIds(context: Context, reminderId : Long): List<Int> {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            val keys = prefs.all.filter { it.value == reminderId }.keys
+            return keys.mapNotNull { key ->
+                key.removePrefix("widget_").toIntOrNull()
+            }
+        }
     }
 }
