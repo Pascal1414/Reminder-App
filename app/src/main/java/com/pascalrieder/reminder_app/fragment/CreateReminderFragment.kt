@@ -1,22 +1,19 @@
 package com.pascalrieder.reminder_app.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
-import android.widget.EditText
-import android.widget.TextView
+import android.view.ViewGroup
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import com.google.android.material.textfield.MaterialAutoCompleteTextView
-import com.google.android.material.textfield.TextInputEditText
-import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
 import com.google.android.material.timepicker.TimeFormat
 import com.pascalrieder.reminder_app.R
+import com.pascalrieder.reminder_app.databinding.FragmentCreateReminderBinding
 import com.pascalrieder.reminder_app.model.Interval
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.viewmodel.MainViewModel
@@ -25,67 +22,60 @@ import java.time.DayOfWeek
 import java.time.LocalTime
 
 
-class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
+class CreateReminderFragment : Fragment() {
 
     companion object {
         const val TAG = "CreateReminderFragment"
     }
 
     private var fab: FloatingActionButton? = null
-    private var errorMessageTextView: TextView? = null
-    private var createButton: Button? = null
-    private var nameEditText: EditText? = null
-    private var descriptionEditText: EditText? = null
-    private var intervalEditText: MaterialAutoCompleteTextView? = null
-    private var weekdayEditTextContainer: TextInputLayout? = null
-    private var weekdayEditText: MaterialAutoCompleteTextView? = null
-    private var timeEditTextContainer: TextInputLayout? = null
-    private var timeEditText: TextInputEditText? = null
     private var selectedTime: LocalTime? = null
 
     private val viewModel: MainViewModel by activityViewModels()
+
+    private var _binding: FragmentCreateReminderBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentCreateReminderBinding.inflate(inflater, container, false)
+        val view = binding.root
+        return view
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         fab = requireActivity().findViewById(R.id.floating_action_button)
-        errorMessageTextView = requireActivity().findViewById(R.id.error_message)
-        createButton = requireActivity().findViewById(R.id.create_reminder_button)
-        nameEditText = requireActivity().findViewById(R.id.reminder_name)
-        descriptionEditText = requireActivity().findViewById(R.id.reminder_description)
-        intervalEditText = requireActivity().findViewById(R.id.reminder_interval)
-        weekdayEditTextContainer = requireActivity().findViewById(R.id.reminder_weekday_container)
-        weekdayEditText = requireActivity().findViewById(R.id.reminder_weekday)
-        timeEditTextContainer = requireActivity().findViewById(R.id.reminder_time_container)
-        timeEditText = requireActivity().findViewById(R.id.reminder_time)
-
         fab?.hide()
 
-        timeEditText?.setOnClickListener {
+        binding.editTextTime.setOnClickListener {
             openTimePicker()
         }
 
-        intervalEditText?.setSimpleItems(Interval.getStringValues().toTypedArray())
-        intervalEditText?.doOnTextChanged { text, _, _, _ ->
+        binding.textViewInterval.setSimpleItems(Interval.getStringValues().toTypedArray())
+        binding.textViewInterval.doOnTextChanged { text, _, _, _ ->
             if (text.toString() == Interval.Daily.toString())
                 hideWeekdayMenu()
             else
                 showWeekdayMenu()
         }
-        weekdayEditText?.setSimpleItems(DayOfWeek.entries.map { it.name }.toTypedArray())
+        binding.textViewWeekday.setSimpleItems(DayOfWeek.entries.map { it.name }.toTypedArray())
 
-        val createButton = requireActivity().findViewById<Button>(R.id.create_reminder_button)
-        createButton.setOnClickListener {
+        binding.buttonCreate.setOnClickListener {
             onCreateClick()
         }
     }
 
     private fun showWeekdayMenu() {
-        weekdayEditTextContainer?.visibility = View.VISIBLE
+        binding.textInputLayoutWeekday.visibility = View.VISIBLE
     }
 
     private fun hideWeekdayMenu() {
-        weekdayEditTextContainer?.visibility = View.GONE
+        binding.textInputLayoutWeekday.visibility = View.GONE
     }
 
     private fun openTimePicker() {
@@ -100,25 +90,25 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
         picker.addOnPositiveButtonClickListener {
             selectedTime = LocalTime.of(picker.hour, picker.minute)
-            timeEditText?.setText(selectedTime.toString())
+            binding.editTextTime.setText(selectedTime.toString())
         }
     }
 
     private fun onCreateClick() {
         hideError()
         // Get name
-        val name = nameEditText?.text.toString()
+        val name = binding.editTextName.text.toString()
 
         // Get description
-        val description = descriptionEditText?.text.toString()
+        val description = binding.editTextDescription.text.toString()
 
         // Get interval
-        val interval = intervalEditText?.text.toString()
+        val interval = binding.textViewInterval.text.toString()
 
         // Get weekday
         var weekday: String? = null
         if (interval == Interval.Weekly.toString())
-            weekday = weekdayEditText?.text.toString()
+            weekday = binding.textViewWeekday.text.toString()
 
         val errorMessage = if (name.isEmpty()) {
             "Please enter a name"
@@ -159,15 +149,16 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     }
 
     private fun showError(message: String) {
-        errorMessageTextView?.text = message
+        binding.textViewError.text = message
     }
 
     private fun hideError() {
-        errorMessageTextView?.text = ""
+        binding.textViewError.text = ""
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun onDestroyView() {
+        super.onDestroyView()
         fab?.show()
+        _binding = null
     }
 }

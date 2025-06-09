@@ -1,33 +1,39 @@
 package com.pascalrieder.reminder_app.fragment
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
-import android.widget.LinearLayout
+import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.adapter.ReminderAdapter
+import com.pascalrieder.reminder_app.databinding.FragmentOverviewBinding
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
-class OverviewFragment : Fragment(R.layout.fragment_overview) {
+class OverviewFragment : Fragment() {
 
-    private var recyclerView: RecyclerView? = null
-    private var noRemindersLinearLayout: LinearLayout? = null
+    private var _binding: FragmentOverviewBinding? = null
+    private val binding get() = _binding!!
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        _binding = FragmentOverviewBinding.inflate(inflater, container, false)
+        val view = binding.root
+        return view
+    }
 
     private val viewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        // Initialize the Views
-        recyclerView = view.findViewById(R.id.reminderRecyclerView)
-        noRemindersLinearLayout = view.findViewById(R.id.no_reminders)
 
         lifecycleScope.launch {
             loadReminders()
@@ -37,16 +43,16 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private fun displayNoReminders() {
-        noRemindersLinearLayout?.visibility = View.VISIBLE
-        recyclerView?.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
     }
 
     private fun loadReminders() {
 
-        recyclerView?.layoutManager = LinearLayoutManager(requireContext())
+        binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
         val adapter = ReminderAdapter(::onDeleteClick, ::onDoneClick)
 
-        recyclerView?.adapter = adapter
+        binding.recyclerView.adapter = adapter
 
         viewModel.reminders.observe(viewLifecycleOwner) { list ->
             adapter.submitList(list)
@@ -70,5 +76,10 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private fun onDoneClick(reminder: Reminder) {
         viewModel.updateReminderStatus(!reminder.isDone(), reminder)
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        _binding = null
     }
 }

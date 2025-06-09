@@ -7,19 +7,19 @@
     tools:context=".fragment.OverviewFragment">
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/reminderRecyclerView"
+        android:id="@+id/recycler_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:gravity="center" />
 
     <LinearLayout
-        android:id="@+id/no_reminders"
+        android:id="@+id/layout_no_reminders"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_marginBottom="190dp"
         android:gravity="center"
         android:orientation="vertical"
-        android:visibility="gone"
-        android:layout_marginBottom="190dp">
+        android:visibility="gone">
 
         <ImageView
             android:layout_width="120dp"

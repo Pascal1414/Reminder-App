@@ -21,7 +21,7 @@
             -> java.lang.IllegalArgumentException: RemoteViews for widget update exceeds maximum bitmap memory usage (used: XXX, max: 15552000)
         -->
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/reminder_name"
+            android:id="@+id/edit_text_name"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLength="60"
@@ -37,7 +37,7 @@
         app:startIconDrawable="@drawable/ic_clarify">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/reminder_description"
+            android:id="@+id/edit_text_description"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLength="200"
@@ -53,8 +53,8 @@
         android:hint="Interval"
         app:startIconDrawable="@drawable/ic_search_activity">
 
-        <AutoCompleteTextView
-            android:id="@+id/reminder_interval"
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/text_view_interval"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none" />
@@ -62,7 +62,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/reminder_weekday_container"
+        android:id="@+id/text_input_layout_weekday"
         style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -71,8 +71,8 @@
         android:visibility="gone"
         app:startIconDrawable="@drawable/ic_event">
 
-        <AutoCompleteTextView
-            android:id="@+id/reminder_weekday"
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/text_view_weekday"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:inputType="none" />
@@ -80,7 +80,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/reminder_time_container"
+        android:id="@+id/text_input_layout_time"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
@@ -88,7 +88,7 @@
         app:startIconDrawable="@drawable/ic_alarm">
 
         <com.google.android.material.textfield.TextInputEditText
-            android:id="@+id/reminder_time"
+            android:id="@+id/edit_text_time"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:clickable="true"
@@ -98,7 +98,7 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView
-        android:id="@+id/error_message"
+        android:id="@+id/text_view_error"
         style="?textAppearanceBodyMedium"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -107,7 +107,7 @@
         android:visibility="visible" />
 
     <Button
-        android:id="@+id/create_reminder_button"
+        android:id="@+id/button_create"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="end"
