@@ -5,19 +5,25 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.button.MaterialButton
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.model.Reminder
 
 class ReminderAdapter(
-    private val dataSet: MutableList<Reminder>,
     private val onDeleteClick: (Reminder) -> Unit,
     private val onDoneClick: (Reminder) -> Unit
-) : RecyclerView.Adapter<ReminderAdapter.ViewHolder>() {
+) : ListAdapter<Reminder, ReminderAdapter.ViewHolder>(ItemDiffCallback()) {
 
     companion object {
         const val ANIMATE_STATUS_CHANGE = "animate status change"
+    }
+
+    class ItemDiffCallback : DiffUtil.ItemCallback<Reminder>() {
+        override fun areItemsTheSame(old: Reminder, new: Reminder) = old.id == new.id
+        override fun areContentsTheSame(old: Reminder, new: Reminder) = old == new
     }
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -47,7 +53,7 @@ class ReminderAdapter(
         position: Int,
         payloads: List<Any?>
     ) {
-        val reminder = dataSet[position]
+        val reminder = getItem(position)
 
         if (payloads.isNotEmpty()) {
             val payload = payloads[0]
@@ -68,7 +74,7 @@ class ReminderAdapter(
     }
 
     override fun onBindViewHolder(viewHolder: ViewHolder, position: Int) {
-        val reminder = dataSet[position]
+        val reminder = getItem(position)
 
         viewHolder.buttonDone.setOnClickListener {
             onDoneClick(reminder)
@@ -94,6 +100,4 @@ class ReminderAdapter(
             viewHolder.buttonDone.icon = null
         }
     }
-
-    override fun getItemCount() = dataSet.size
 }

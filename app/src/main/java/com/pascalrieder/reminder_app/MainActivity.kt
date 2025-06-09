@@ -9,21 +9,29 @@ import android.provider.Settings
 import android.view.View
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.ViewModelProvider
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.pascalrieder.reminder_app.fragment.CreateReminderFragment
 import com.pascalrieder.reminder_app.fragment.OverviewFragment
 import com.pascalrieder.reminder_app.fragment.RoomOverviewFragment
+import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
+import com.pascalrieder.reminder_app.repository.ReminderRepository
+import com.pascalrieder.reminder_app.viewmodel.MainViewModel
+import com.pascalrieder.reminder_app.viewmodel.factory.MainViewModelFactory
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var alarmManager: AlarmManager
+
+    private lateinit var viewModel: MainViewModel
 
     private val requestNotificationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -32,6 +40,16 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         DynamicColors.applyToActivityIfAvailable(this)
         super.onCreate(savedInstanceState)
+
+        val db = AppDatabase.getInstance(this)
+        val factory = MainViewModelFactory(
+            ReminderRepository(db.reminderDao()),
+            ReminderCheckRepository(db.reminderCheckDao())
+        )
+
+        viewModel = ViewModelProvider(this, factory)[MainViewModel::class.java].also {
+            it.getReminders()
+        }
 
         enableEdgeToEdge()
         setContentView(R.layout.activity_main)

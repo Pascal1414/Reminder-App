@@ -1,40 +1,26 @@
 package com.pascalrieder.reminder_app.fragment
 
-import android.appwidget.AppWidgetManager
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import com.pascalrieder.reminder_app.AppDatabase
-import com.pascalrieder.reminder_app.NotificationHandler
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.adapter.ReminderAdapter
-import com.pascalrieder.reminder_app.dao.ReminderCheckDao
-import com.pascalrieder.reminder_app.dao.ReminderDao
 import com.pascalrieder.reminder_app.model.Reminder
-import com.pascalrieder.reminder_app.model.ReminderCheck
-import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
-import com.pascalrieder.reminder_app.repository.ReminderRepository
-import com.pascalrieder.reminder_app.widget.WidgetConfigActivity
-import com.pascalrieder.reminder_app.widget.WidgetProvider.Companion.updateWidget
+import com.pascalrieder.reminder_app.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDateTime
 
 class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
     private var recyclerView: RecyclerView? = null
     private var noRemindersLinearLayout: LinearLayout? = null
 
-    private lateinit var db: AppDatabase
-    private lateinit var reminderRepository: ReminderRepository
-    private lateinit var reminderCheckRepository: ReminderCheckRepository
-
-    private var reminders = mutableListOf<Reminder>()
-
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -43,38 +29,30 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
         recyclerView = view.findViewById(R.id.reminderRecyclerView)
         noRemindersLinearLayout = view.findViewById(R.id.no_reminders)
 
-        // Initialize the database and DAOs
-        db = AppDatabase.getInstance(requireContext()).also {
-            reminderRepository = ReminderRepository(it.reminderDao())
-            reminderCheckRepository = ReminderCheckRepository(it.reminderCheckDao())
-        }
-
         lifecycleScope.launch {
             loadReminders()
 
-            scheduleNotifications()
+            viewModel.scheduleNotifications(requireContext())
         }
     }
 
-    private fun updateNoRemindersVisibility() {
-        if (reminders.isEmpty()) {
-            noRemindersLinearLayout?.visibility = View.VISIBLE
-            recyclerView?.visibility = View.GONE
-        }
+    private fun displayNoReminders() {
+        noRemindersLinearLayout?.visibility = View.VISIBLE
+        recyclerView?.visibility = View.GONE
     }
 
-    private suspend fun loadReminders() {
-        reminders = reminderRepository.getAll().toMutableList()
+    private fun loadReminders() {
 
         recyclerView?.layoutManager = LinearLayoutManager(requireContext())
-        recyclerView?.adapter = ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
+        val adapter = ReminderAdapter(::onDeleteClick, ::onDoneClick)
 
-        updateNoRemindersVisibility()
-    }
+        recyclerView?.adapter = adapter
 
-    private suspend fun scheduleNotifications() {
-        reminders.forEach { reminder ->
-            NotificationHandler().scheduleNotification(requireContext(), reminder.id, reminder)
+        viewModel.reminders.observe(viewLifecycleOwner) { list ->
+            adapter.submitList(list)
+
+            if (list.isEmpty())
+                displayNoReminders()
         }
     }
 
@@ -83,7 +61,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             .setTitle("Are you sure?")
             .setMessage("Do you want to delete the reminder?")
             .setPositiveButton("Delete") { _, _ ->
-                deleteReminder(reminder)
+                viewModel.deleteReminder(requireContext(), reminder)
             }
             .setNegativeButton("Cancel") { _, _ ->
             }
@@ -91,45 +69,6 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private fun onDoneClick(reminder: Reminder) {
-        updateReminderStatus(!reminder.isDone(), reminder)
-    }
-
-    private fun updateReminderStatus(done: Boolean, reminder: Reminder) = lifecycleScope.launch {
-        val reminderCheck = ReminderCheck(
-            done = done,
-            dateTime = LocalDateTime.now(),
-            reminderId = reminder.id,
-        )
-        reminderCheckRepository.create(reminderCheck)
-
-        val index = reminders.indexOf(reminder)
-        if (index != -1) {
-            reminders[index].reminderChecks.add(reminderCheck)
-            recyclerView?.adapter?.notifyItemChanged(index, ReminderAdapter.ANIMATE_STATUS_CHANGE)
-
-            WidgetConfigActivity.getWidgetIds(requireContext(), reminder.id)
-                .forEach { appWidgetId ->
-                    updateWidget(
-                        requireContext(),
-                        AppWidgetManager.getInstance(context),
-                        appWidgetId,
-                        reminder
-                    )
-                }
-        }
-    }
-
-    private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {
-        reminderRepository.delete(reminder)
-
-        NotificationHandler().cancelNotification(requireContext(), reminder.id, reminder.name)
-
-        val index = reminders.indexOf(reminder)
-        if (index != -1) {
-            reminders.removeAt(index)
-            recyclerView?.adapter?.notifyItemRemoved(index)
-        }
-
-        updateNoRemindersVisibility()
+        viewModel.updateReminderStatus(!reminder.isDone(), reminder)
     }
 }

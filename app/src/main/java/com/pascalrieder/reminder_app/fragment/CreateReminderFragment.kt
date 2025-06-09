@@ -5,9 +5,9 @@ import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.widget.doOnTextChanged
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.activityViewModels
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -16,11 +16,10 @@ import com.google.android.material.textfield.TextInputLayout
 import com.google.android.material.timepicker.MaterialTimePicker
 import com.google.android.material.timepicker.MaterialTimePicker.INPUT_MODE_CLOCK
 import com.google.android.material.timepicker.TimeFormat
-import com.pascalrieder.reminder_app.AppDatabase
-import com.pascalrieder.reminder_app.NotificationHandler
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.model.Interval
 import com.pascalrieder.reminder_app.model.Reminder
+import com.pascalrieder.reminder_app.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 import java.time.DayOfWeek
 import java.time.LocalTime
@@ -44,12 +43,10 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
     private var timeEditText: TextInputEditText? = null
     private var selectedTime: LocalTime? = null
 
-    private lateinit var db: AppDatabase
+    private val viewModel: MainViewModel by activityViewModels()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-
-        db = AppDatabase.getInstance(requireContext())
 
         fab = requireActivity().findViewById(R.id.floating_action_button)
         errorMessageTextView = requireActivity().findViewById(R.id.error_message)
@@ -145,8 +142,6 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
             }
         }
 
-        val reminderDao = db.reminderDao()
-
         val reminder = Reminder(
             name = name,
             description = if (description.isEmpty()) null else description,
@@ -157,18 +152,7 @@ class CreateReminderFragment : Fragment(R.layout.fragment_create_reminder) {
 
         requireActivity().lifecycleScope.launch {
 
-            val reminderId = reminderDao.create(reminder)
-
-            val isScheduled =
-                NotificationHandler().scheduleNotification(requireContext(), reminderId, reminder)
-
-            if (!isScheduled) {
-                Toast.makeText(
-                    requireContext(),
-                    "Notification was not scheduled",
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
+            viewModel.createReminder(requireContext(), reminder)
 
             requireActivity().supportFragmentManager.popBackStack()
         }

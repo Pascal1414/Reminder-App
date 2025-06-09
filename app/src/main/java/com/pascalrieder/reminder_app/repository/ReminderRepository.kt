@@ -4,22 +4,23 @@ import com.pascalrieder.reminder_app.dao.ReminderDao
 import com.pascalrieder.reminder_app.dto.ReminderWithChecks
 import com.pascalrieder.reminder_app.model.Reminder
 
-class ReminderRepository(private val userDao: ReminderDao) {
+class ReminderRepository(private val reminderDao: ReminderDao) {
 
     suspend fun getAll(): List<Reminder> {
-        return userDao.getAll().toReminders()
+        return reminderDao.getAll().toReminders()
     }
 
     suspend fun getById(id: Long): Reminder? {
-        return userDao.getById(id)?.toReminder()
+        return reminderDao.getById(id)?.toReminder()
     }
 
-    suspend fun create(reminder: Reminder): Long {
-        return userDao.create(reminder)
+    suspend fun create(reminder: Reminder): Reminder? {
+        val id = reminderDao.create(reminder)
+        return reminderDao.getById(id)?.toReminder()
     }
 
     suspend fun delete(reminder: Reminder) {
-        userDao.delete(reminder)
+        reminderDao.delete(reminder)
     }
 
     fun List<ReminderWithChecks>.toReminders(): List<Reminder> {
