@@ -6,7 +6,7 @@ import android.content.Intent
 import android.util.Log
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.NotificationHandler
-import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
+import com.pascalrieder.reminder_app.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -18,7 +18,8 @@ class BootCompletedReceiver : BroadcastReceiver() {
             // Reschedule all reminders
             CoroutineScope(Dispatchers.IO).launch {
                 val db = AppDatabase.getInstance(context)
-                val reminders = db.reminderDao().getAll().toReminders()
+                val repository = ReminderRepository(db.reminderDao())
+                val reminders = repository.getAll()
 
                 reminders.forEach { reminder ->
                     NotificationHandler().scheduleNotification(

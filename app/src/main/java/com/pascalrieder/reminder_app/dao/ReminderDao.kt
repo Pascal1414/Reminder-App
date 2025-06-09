@@ -20,34 +20,4 @@ interface ReminderDao {
 
     @Delete
     suspend fun delete(reminder: Reminder)
-
-    companion object {
-        fun List<ReminderWithChecks>.toReminders(): List<Reminder> {
-            return this.map {
-                Reminder(
-                    id = it.reminder.id,
-                    name = it.reminder.name,
-                    description = it.reminder.description,
-                    interval = it.reminder.interval,
-                    weekday = it.reminder.weekday,
-                    time = it.reminder.time
-                ).apply {
-                    reminderChecks = it.reminderChecks
-                }
-            }
-        }
-
-        fun ReminderWithChecks.toReminder(): Reminder {
-            return Reminder(
-                id = reminder.id,
-                name = reminder.name,
-                description = reminder.description,
-                interval = reminder.interval,
-                weekday = reminder.weekday,
-                time = reminder.time
-            ).also { reminder ->
-                reminder.reminderChecks = reminderChecks
-            }
-        }
-    }
 }

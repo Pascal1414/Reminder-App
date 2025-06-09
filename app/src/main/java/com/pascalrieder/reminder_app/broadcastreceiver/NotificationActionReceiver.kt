@@ -7,6 +7,7 @@ import android.content.Intent
 import android.util.Log
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.model.ReminderCheck
+import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -36,7 +37,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
 
     private suspend fun updateReminderStatus(context: Context, done: Boolean, reminderId: Long) {
         val db = AppDatabase.getInstance(context)
-        val reminderCheckDao = db.reminderCheckDao()
+        val reminderCheckRepository = ReminderCheckRepository(db.reminderCheckDao())
 
 
         val reminderCheck = ReminderCheck(
@@ -44,7 +45,7 @@ class NotificationActionReceiver : BroadcastReceiver() {
             dateTime = LocalDateTime.now(),
             reminderId = reminderId,
         )
-        reminderCheckDao.create(reminderCheck)
+        reminderCheckRepository.create(reminderCheck)
     }
 
     private fun cancelNotification(context: Context, reminderId: Long) {

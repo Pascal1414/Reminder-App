@@ -15,9 +15,10 @@ import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.adapter.ReminderAdapter
 import com.pascalrieder.reminder_app.dao.ReminderCheckDao
 import com.pascalrieder.reminder_app.dao.ReminderDao
-import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.model.ReminderCheck
+import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
+import com.pascalrieder.reminder_app.repository.ReminderRepository
 import com.pascalrieder.reminder_app.widget.WidgetConfigActivity
 import com.pascalrieder.reminder_app.widget.WidgetProvider.Companion.updateWidget
 import kotlinx.coroutines.launch
@@ -29,8 +30,8 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     private var noRemindersLinearLayout: LinearLayout? = null
 
     private lateinit var db: AppDatabase
-    private lateinit var reminderDao: ReminderDao
-    private lateinit var reminderCheckDao: ReminderCheckDao
+    private lateinit var reminderRepository: ReminderRepository
+    private lateinit var reminderCheckRepository: ReminderCheckRepository
 
     private var reminders = mutableListOf<Reminder>()
 
@@ -44,8 +45,8 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
 
         // Initialize the database and DAOs
         db = AppDatabase.getInstance(requireContext()).also {
-            reminderDao = it.reminderDao()
-            reminderCheckDao = it.reminderCheckDao()
+            reminderRepository = ReminderRepository(it.reminderDao())
+            reminderCheckRepository = ReminderCheckRepository(it.reminderCheckDao())
         }
 
         lifecycleScope.launch {
@@ -63,7 +64,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private suspend fun loadReminders() {
-        reminders = reminderDao.getAll().toReminders().toMutableList()
+        reminders = reminderRepository.getAll().toMutableList()
 
         recyclerView?.layoutManager = LinearLayoutManager(requireContext())
         recyclerView?.adapter = ReminderAdapter(reminders, ::onDeleteClick, ::onDoneClick)
@@ -99,7 +100,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
             dateTime = LocalDateTime.now(),
             reminderId = reminder.id,
         )
-        reminderCheckDao.create(reminderCheck)
+        reminderCheckRepository.create(reminderCheck)
 
         val index = reminders.indexOf(reminder)
         if (index != -1) {
@@ -119,7 +120,7 @@ class OverviewFragment : Fragment(R.layout.fragment_overview) {
     }
 
     private fun deleteReminder(reminder: Reminder) = lifecycleScope.launch {
-        reminderDao.delete(reminder)
+        reminderRepository.delete(reminder)
 
         NotificationHandler().cancelNotification(requireContext(), reminder.id, reminder.name)
 

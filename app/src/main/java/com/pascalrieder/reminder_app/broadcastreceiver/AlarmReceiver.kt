@@ -13,9 +13,9 @@ import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.MainActivity
 import com.pascalrieder.reminder_app.NotificationHandler
 import com.pascalrieder.reminder_app.R
-import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminder
 import com.pascalrieder.reminder_app.model.Notification
 import com.pascalrieder.reminder_app.model.Reminder
+import com.pascalrieder.reminder_app.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -33,7 +33,8 @@ class AlarmReceiver : BroadcastReceiver() {
 
             Log.i("AlarmReceiver", "Alarm received for reminderId: $notificationId")
 
-            val reminder = getReminder(context, notificationId.toLong())
+            val repository = ReminderRepository(AppDatabase.getInstance(context).reminderDao())
+            val reminder = repository.getById(notificationId.toLong())
 
             if (reminder == null) {
                 Log.i("AlarmReceiver", "Invalid reminder id: $notificationId")
@@ -102,11 +103,6 @@ class AlarmReceiver : BroadcastReceiver() {
                 reminder
             )
         }
-    }
-
-    private suspend fun getReminder(context: Context, reminderId: Long): Reminder? {
-        val db = AppDatabase.getInstance(context)
-        return db.reminderDao().getById(reminderId)?.toReminder()
     }
 
     private suspend fun addNotification(

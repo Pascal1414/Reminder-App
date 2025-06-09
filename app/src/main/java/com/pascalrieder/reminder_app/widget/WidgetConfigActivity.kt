@@ -16,20 +16,18 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.color.DynamicColors
-import com.google.android.material.color.MaterialColors
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
 import com.pascalrieder.reminder_app.adapter.ConfigureReminderWidgetAdapter
-import com.pascalrieder.reminder_app.dao.ReminderDao
-import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminders
 import com.pascalrieder.reminder_app.model.Reminder
+import com.pascalrieder.reminder_app.repository.ReminderRepository
 import kotlinx.coroutines.launch
 
 
 class WidgetConfigActivity : AppCompatActivity() {
 
     private lateinit var db: AppDatabase
-    private lateinit var reminderDao: ReminderDao
+    private lateinit var reminderRepository: ReminderRepository
 
     private var reminders = mutableListOf<Reminder>()
 
@@ -54,14 +52,14 @@ class WidgetConfigActivity : AppCompatActivity() {
         noRemindersLinearLayout = findViewById(R.id.no_reminders_container)
 
         db = AppDatabase.getInstance(this).also {
-            reminderDao = it.reminderDao()
+            reminderRepository = ReminderRepository(it.reminderDao())
         }
 
         loadReminders()
     }
 
     private fun loadReminders() = lifecycleScope.launch {
-        reminders = reminderDao.getAll().toReminders().toMutableList()
+        reminders = reminderRepository.getAll().toMutableList()
 
         recyclerView?.layoutManager = LinearLayoutManager(this@WidgetConfigActivity)
         recyclerView?.adapter = ConfigureReminderWidgetAdapter(reminders, ::onReminderClick)
@@ -99,7 +97,11 @@ class WidgetConfigActivity : AppCompatActivity() {
         theme.resolveAttribute(com.google.android.material.R.attr.colorOnSurface, typedValue, true)
         val colorOnSurface = typedValue.data
 
-        theme.resolveAttribute(com.google.android.material.R.attr.colorSurfaceVariant, typedValue, true)
+        theme.resolveAttribute(
+            com.google.android.material.R.attr.colorSurfaceVariant,
+            typedValue,
+            true
+        )
         val colorSurfaceVariant = typedValue.data
 
         prefs.edit(commit = true) {
@@ -131,7 +133,7 @@ class WidgetConfigActivity : AppCompatActivity() {
             return if (reminderId == -1L) null else reminderId
         }
 
-        fun getWidgetIds(context: Context, reminderId : Long): List<Int> {
+        fun getWidgetIds(context: Context, reminderId: Long): List<Int> {
             val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
             val keys = prefs.all.filter { it.value == reminderId }.keys
             return keys.mapNotNull { key ->

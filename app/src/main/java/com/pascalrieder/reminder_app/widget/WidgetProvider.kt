@@ -14,9 +14,10 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
 import com.pascalrieder.reminder_app.AppDatabase
 import com.pascalrieder.reminder_app.R
-import com.pascalrieder.reminder_app.dao.ReminderDao.Companion.toReminder
 import com.pascalrieder.reminder_app.model.Reminder
 import com.pascalrieder.reminder_app.model.ReminderCheck
+import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
+import com.pascalrieder.reminder_app.repository.ReminderRepository
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -138,8 +139,8 @@ class WidgetProvider : AppWidgetProvider() {
 
             // Get Reminder
             CoroutineScope(Dispatchers.IO).launch {
-                val reminder =
-                    AppDatabase.getInstance(context).reminderDao().getById(reminderId)?.toReminder()
+                val repository = ReminderRepository(AppDatabase.getInstance(context).reminderDao())
+                val reminder = repository.getById(reminderId)
 
                 updateWidget(context, appWidgetManager, appWidgetId, reminder)
             }
@@ -163,10 +164,10 @@ class WidgetProvider : AppWidgetProvider() {
 
 
             CoroutineScope(Dispatchers.IO).launch {
-
                 val appDatabase = AppDatabase.getInstance(context)
-                val reminder =
-                    appDatabase.reminderDao().getById(reminderId)?.toReminder()
+                val reminderRepository = ReminderRepository(appDatabase.reminderDao())
+                val reminderCheckRepository = ReminderCheckRepository(appDatabase.reminderCheckDao())
+                val reminder = reminderRepository.getById(reminderId)
 
                 if (reminder == null) {
                     return@launch
@@ -178,7 +179,7 @@ class WidgetProvider : AppWidgetProvider() {
                     reminderId = reminder.id,
                 )
 
-                appDatabase.reminderCheckDao().create(reminderCheck)
+                reminderCheckRepository.create(reminderCheck)
 
                 reminder.reminderChecks.add(reminderCheck)
 
