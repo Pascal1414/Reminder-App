@@ -15,6 +15,7 @@ import com.pascalrieder.reminder_app.model.ReminderCheck
 import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
 import com.pascalrieder.reminder_app.repository.ReminderRepository
 import com.pascalrieder.reminder_app.widget.WidgetConfigActivity
+import com.pascalrieder.reminder_app.widget.WidgetProvider
 import com.pascalrieder.reminder_app.widget.WidgetProvider.Companion.updateWidget
 import kotlinx.coroutines.launch
 import java.time.LocalDateTime
@@ -23,7 +24,6 @@ import kotlin.text.get
 class MainViewModel(
     private val reminderRepository: ReminderRepository,
     private val reminderCheckRepository: ReminderCheckRepository
-
 ) : ViewModel() {
 
     private val _reminders = MutableLiveData<List<Reminder>>(emptyList())
@@ -32,7 +32,7 @@ class MainViewModel(
     /**
      * Creates a new reminder in the database and schedules a notification for it.
      */
-    fun createReminder(context: Context, reminder: Reminder) = viewModelScope.launch {
+    suspend fun createReminder(context: Context, reminder: Reminder) {
         val reminder = reminderRepository.create(reminder)
 
         if (reminder == null) {
@@ -41,7 +41,7 @@ class MainViewModel(
                 "Failed to create reminder",
                 Toast.LENGTH_SHORT
             ).show()
-            return@launch
+            return
         }
 
         val reminders = _reminders.value?.toMutableList() ?: mutableListOf()
@@ -64,7 +64,7 @@ class MainViewModel(
         _reminders.value = reminderRepository.getAll().toMutableList()
     }
 
-    fun deleteReminder(context: Context, reminder: Reminder) = viewModelScope.launch {
+    suspend fun deleteReminder(context: Context, reminder: Reminder) {
         reminderRepository.delete(reminder)
 
         NotificationHandler().cancelNotification(context, reminder.id, reminder.name)
@@ -77,7 +77,7 @@ class MainViewModel(
 
     }
 
-    fun updateReminderStatus(done: Boolean, reminder: Reminder) = viewModelScope.launch {
+    suspend fun updateReminderStatus(done: Boolean, reminder: Reminder) {
         val reminderCheck = ReminderCheck(
             done = done,
             dateTime = LocalDateTime.now(),
@@ -85,17 +85,22 @@ class MainViewModel(
         )
         reminderCheckRepository.create(reminderCheck)
 
-        _reminders.value?.first { it.id == reminder.id }.reminderChecks.add(reminderCheck)
+        _reminders.value?.first { it.id == reminder.id }?.reminderChecks?.add(reminderCheck)
     }
 
-    fun notifyReminderWidgets(context: Context, reminder: Reminder) {
-        WidgetConfigActivity.getWidgetIds(context, reminder.id)
+    fun notifyReminderWidgets(
+        context: Context,
+        reminder: Reminder,
+        isReminderDeleted: Boolean = false
+    ) {
+        WidgetProvider.getWidgetIdsForReminder(context, reminder.id)
             .forEach { appWidgetId ->
                 updateWidget(
                     context,
                     AppWidgetManager.getInstance(context),
                     appWidgetId,
-                    reminder
+                    reminder,
+                    isReminderDeleted
                 )
             }
     }

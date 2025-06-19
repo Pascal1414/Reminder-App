@@ -4,12 +4,15 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
+import android.content.Context.MODE_PRIVATE
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.view.View
 import android.widget.RemoteViews
+import androidx.core.content.edit
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.graphics.createBitmap
 import com.pascalrieder.reminder_app.AppDatabase
@@ -33,37 +36,48 @@ class WidgetProvider : AppWidgetProvider() {
             context: Context,
             appWidgetManager: AppWidgetManager,
             appWidgetId: Int,
-            reminder: Reminder?
+            reminder: Reminder?,
+            isReminderDeleted: Boolean = false
         ) {
             if (reminder == null)
                 return
 
-            val views = RemoteViews(context.packageName, R.layout.widget)
 
-            // Update views
+            if (isReminderDeleted) {
+                removeWidgetsReminderId(context, appWidgetId)
 
-            val colors = WidgetColors.loadFromPreferences(context)
-
-            val lines: List<Bitmap> = reminder.name.split(" ").mapNotNull { word ->
-                if (word.isNotEmpty())
-                    createBitmapWithCustomFont(context, word, colors.colorOnSurface)
-                else
-                    null
-            }
-            val bitmap = combineLineBitmapsVertically(lines)
-
-            views.setImageViewBitmap(R.id.widget_image_view_name, bitmap)
-
-            if (reminder.isDone()) {
-                views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurface)
+                // Apply initial layout
+                appWidgetManager.updateAppWidget(appWidgetId, RemoteViews(context.packageName, R.layout.widget_initial_layout))
             } else {
-                views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurfaceVariant)
+                // Set content
+                val views = RemoteViews(context.packageName, R.layout.widget)
+
+                val colors = WidgetColors.loadFromPreferences(context)
+
+                val lines: List<Bitmap> = reminder.name.split(" ").mapNotNull { word ->
+                    if (word.isNotEmpty())
+                        createBitmapWithCustomFont(context, word, colors.colorOnSurface)
+                    else
+                        null
+                }
+                val bitmap = combineLineBitmapsVertically(lines)
+
+                views.setImageViewBitmap(R.id.widget_image_view_name, bitmap)
+
+                if (reminder.isDone()) {
+                    views.setInt(R.id.widget_reminder, "setBackgroundColor", colors.colorSurface)
+                } else {
+                    views.setInt(
+                        R.id.widget_reminder,
+                        "setBackgroundColor",
+                        colors.colorSurfaceVariant
+                    )
+                }
+
+                setOnClickReceiver(context, views, appWidgetId)
+
+                appWidgetManager.updateAppWidget(appWidgetId, views)
             }
-
-            setOnClickReceiver(context, views, appWidgetId)
-
-            // Has to be called after setting up the view
-            appWidgetManager.updateAppWidget(appWidgetId, views)
         }
 
         private fun setOnClickReceiver(
@@ -120,6 +134,34 @@ class WidgetProvider : AppWidgetProvider() {
 
             return result
         }
+
+
+        const val WIDGET_PREFS = "WidgetPreferences"
+
+        fun setWidgetsReminderId(context: Context, widgetId: Int, reminderId: Long) {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            prefs.edit { putLong("widget_$widgetId", reminderId) }
+        }
+
+        fun removeWidgetsReminderId(context: Context, widgetId: Int) {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            prefs.edit { remove("widget_$widgetId") }
+        }
+
+        fun getWidgetsReminderId(context: Context, widgetId: Int): Long? {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            val reminderId = prefs.getLong("widget_$widgetId", -1)
+            return if (reminderId == -1L) null else reminderId
+        }
+
+        fun getWidgetIdsForReminder(context: Context, reminderId: Long): List<Int> {
+            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+            val keys = prefs.all.filter { it.value == reminderId }.keys
+            return keys.mapNotNull { key ->
+                key.removePrefix("widget_").toIntOrNull()
+            }
+        }
+
     }
 
     override fun onUpdate(
@@ -130,7 +172,7 @@ class WidgetProvider : AppWidgetProvider() {
         appWidgetIds.forEach { appWidgetId ->
 
             // Get Reminder Id
-            val reminderId = WidgetConfigActivity.getReminderId(context, appWidgetId)
+            val reminderId = getWidgetsReminderId(context, appWidgetId)
 
             if (reminderId == null) {
                 updateWidget(context, appWidgetManager, appWidgetId, null)
@@ -157,7 +199,7 @@ class WidgetProvider : AppWidgetProvider() {
             if (appWidgetId == -1) return
 
             // Get Reminder Id
-            val reminderId = WidgetConfigActivity.getReminderId(context, appWidgetId)
+            val reminderId = getWidgetsReminderId(context, appWidgetId)
 
             if (reminderId == null)
                 return
@@ -166,7 +208,8 @@ class WidgetProvider : AppWidgetProvider() {
             CoroutineScope(Dispatchers.IO).launch {
                 val appDatabase = AppDatabase.getInstance(context)
                 val reminderRepository = ReminderRepository(appDatabase.reminderDao())
-                val reminderCheckRepository = ReminderCheckRepository(appDatabase.reminderCheckDao())
+                val reminderCheckRepository =
+                    ReminderCheckRepository(appDatabase.reminderCheckDao())
                 val reminder = reminderRepository.getById(reminderId)
 
                 if (reminder == null) {
@@ -196,8 +239,8 @@ class WidgetProvider : AppWidgetProvider() {
         companion object {
             fun loadFromPreferences(context: Context): WidgetColors {
                 val prefs = context.getSharedPreferences(
-                    WidgetConfigActivity.WIDGET_PREFS,
-                    Context.MODE_PRIVATE
+                    WIDGET_PREFS,
+                    MODE_PRIVATE
                 )
                 return WidgetColors(
                     colorSurface = prefs.getInt("colorSurface", Color.BLACK),

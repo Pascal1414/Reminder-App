@@ -75,7 +75,7 @@ class WidgetConfigActivity : AppCompatActivity() {
         if (appWidgetId == null || appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
             Toast.makeText(this, "Failed to get widget ID", Toast.LENGTH_SHORT).show()
         } else {
-            setReminderId(this, appWidgetId, reminder.id)
+            WidgetProvider.setWidgetsReminderId(this, appWidgetId, reminder.id)
             WidgetProvider.updateWidget(
                 this,
                 AppWidgetManager.getInstance(this),
@@ -88,7 +88,7 @@ class WidgetConfigActivity : AppCompatActivity() {
     }
 
     private fun saveThemeColorsForWidget() {
-        val prefs = getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
+        val prefs = getSharedPreferences(WidgetProvider.WIDGET_PREFS, MODE_PRIVATE)
 
         val typedValue = TypedValue()
         theme.resolveAttribute(com.google.android.material.R.attr.colorSurface, typedValue, true)
@@ -115,30 +115,6 @@ class WidgetConfigActivity : AppCompatActivity() {
         if (reminders.isEmpty()) {
             noRemindersLinearLayout?.visibility = View.VISIBLE
             recyclerView?.visibility = View.GONE
-        }
-    }
-
-    companion object {
-
-        const val WIDGET_PREFS = "WidgetPreferences"
-
-        fun setReminderId(context: Context, widgetId: Int, reminderId: Long) {
-            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
-            prefs.edit { putLong("widget_$widgetId", reminderId) }
-        }
-
-        fun getReminderId(context: Context, widgetId: Int): Long? {
-            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
-            val reminderId = prefs.getLong("widget_$widgetId", -1)
-            return if (reminderId == -1L) null else reminderId
-        }
-
-        fun getWidgetIds(context: Context, reminderId: Long): List<Int> {
-            val prefs = context.getSharedPreferences(WIDGET_PREFS, MODE_PRIVATE)
-            val keys = prefs.all.filter { it.value == reminderId }.keys
-            return keys.mapNotNull { key ->
-                key.removePrefix("widget_").toIntOrNull()
-            }
         }
     }
 }

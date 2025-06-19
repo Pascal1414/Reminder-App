@@ -70,15 +70,23 @@ class OverviewFragment : Fragment() {
             .setTitle("Are you sure?")
             .setMessage("Do you want to delete the reminder?")
             .setPositiveButton("Delete") { _, _ ->
-                viewModel.deleteReminder(requireContext(), reminder)
+                lifecycleScope.launch {
+                    viewModel.deleteReminder(requireContext(), reminder)
+                    viewModel.notifyReminderWidgets(
+                        requireContext(),
+                        reminder,
+                        isReminderDeleted = true
+                    )
+                }
             }
             .setNegativeButton("Cancel") { _, _ ->
             }
             .show()
     }
 
-    private fun onDoneClick(reminder: Reminder) {
+    private fun onDoneClick(reminder: Reminder) = lifecycleScope.launch {
         viewModel.updateReminderStatus(!reminder.isDone(), reminder)
+        viewModel.notifyReminderWidgets(requireContext(), reminder)
     }
 
     override fun onDestroyView() {
