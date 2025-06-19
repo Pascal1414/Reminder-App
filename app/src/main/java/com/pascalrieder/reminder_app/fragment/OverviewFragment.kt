@@ -20,6 +20,8 @@ class OverviewFragment : Fragment() {
     private var _binding: FragmentOverviewBinding? = null
     private val binding get() = _binding!!
 
+    private lateinit var adapter: ReminderAdapter
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,23 +37,8 @@ class OverviewFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        lifecycleScope.launch {
-            loadReminders()
-
-            viewModel.scheduleNotifications(requireContext())
-        }
-    }
-
-    private fun displayNoReminders() {
-        binding.recyclerView.visibility = View.VISIBLE
-        binding.recyclerView.visibility = View.GONE
-    }
-
-    private fun loadReminders() {
-
+        adapter = ReminderAdapter(::onDeleteClick, ::onDoneClick)
         binding.recyclerView.layoutManager = LinearLayoutManager(requireContext())
-        val adapter = ReminderAdapter(::onDeleteClick, ::onDoneClick)
-
         binding.recyclerView.adapter = adapter
 
         viewModel.reminders.observe(viewLifecycleOwner) { list ->
@@ -59,7 +46,23 @@ class OverviewFragment : Fragment() {
 
             if (list.isEmpty())
                 displayNoReminders()
+            else
+                hideNoReminders()
         }
+
+        lifecycleScope.launch {
+            viewModel.scheduleNotifications(requireContext())
+        }
+    }
+
+    private fun displayNoReminders() {
+        binding.layoutNoReminders.visibility = View.VISIBLE
+        binding.recyclerView.visibility = View.GONE
+    }
+
+    private fun hideNoReminders() {
+        binding.layoutNoReminders.visibility = View.GONE
+        binding.recyclerView.visibility = View.VISIBLE
     }
 
     private fun onDeleteClick(reminder: Reminder) {

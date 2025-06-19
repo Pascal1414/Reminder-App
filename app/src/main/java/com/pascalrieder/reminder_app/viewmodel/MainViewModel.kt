@@ -60,7 +60,7 @@ class MainViewModel(
         }
     }
 
-    fun getReminders() = viewModelScope.launch {
+    suspend fun getReminders() {
         _reminders.value = reminderRepository.getAll().toMutableList()
     }
 
@@ -85,7 +85,7 @@ class MainViewModel(
         )
         reminderCheckRepository.create(reminderCheck)
 
-        _reminders.value.first { it.id == reminder.id }.reminderChecks.add(reminderCheck)
+        _reminders.value?.first { it.id == reminder.id }.reminderChecks.add(reminderCheck)
     }
 
     fun notifyReminderWidgets(context: Context, reminder: Reminder) {
@@ -100,8 +100,8 @@ class MainViewModel(
             }
     }
 
-    fun scheduleNotifications(context: Context) = viewModelScope.launch {
-        reminders.value.forEach { reminder ->
+    suspend fun scheduleNotifications(context: Context) {
+        reminders.value?.forEach { reminder ->
             NotificationHandler().scheduleNotification(context, reminder.id, reminder)
         }
     }

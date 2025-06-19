@@ -16,6 +16,7 @@ import androidx.core.net.toUri
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.lifecycleScope
 import com.google.android.material.color.DynamicColors
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -26,6 +27,7 @@ import com.pascalrieder.reminder_app.repository.ReminderCheckRepository
 import com.pascalrieder.reminder_app.repository.ReminderRepository
 import com.pascalrieder.reminder_app.viewmodel.MainViewModel
 import com.pascalrieder.reminder_app.viewmodel.factory.MainViewModelFactory
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -48,7 +50,9 @@ class MainActivity : AppCompatActivity() {
         )
 
         viewModel = ViewModelProvider(this, factory)[MainViewModel::class.java].also {
-            it.getReminders()
+            lifecycleScope.launch {
+                it.getReminders()
+            }
         }
 
         enableEdgeToEdge()
