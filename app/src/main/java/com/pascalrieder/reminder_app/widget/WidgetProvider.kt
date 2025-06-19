@@ -39,15 +39,27 @@ class WidgetProvider : AppWidgetProvider() {
             reminder: Reminder?,
             isReminderDeleted: Boolean = false
         ) {
-            if (reminder == null)
-                return
-
-
-            if (isReminderDeleted) {
+            if (isReminderDeleted || reminder == null) {
                 removeWidgetsReminderId(context, appWidgetId)
 
+
+                val views = RemoteViews(context.packageName, R.layout.widget_initial_layout)
+
+                val intent = Intent(context, WidgetConfigActivity::class.java).apply {
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
+                }
+
+                val pendingIntent = PendingIntent.getActivity(
+                    context,
+                    0,
+                    intent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+
+                views.setOnClickPendingIntent(R.id.widget_initial_layout, pendingIntent)
+
                 // Apply initial layout
-                appWidgetManager.updateAppWidget(appWidgetId, RemoteViews(context.packageName, R.layout.widget_initial_layout))
+                appWidgetManager.updateAppWidget(appWidgetId, views)
             } else {
                 // Set content
                 val views = RemoteViews(context.packageName, R.layout.widget)
