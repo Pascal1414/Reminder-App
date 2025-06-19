@@ -77,7 +77,7 @@ class MainViewModel(
 
     }
 
-    suspend fun updateReminderStatus(done: Boolean, reminder: Reminder) {
+    suspend fun updateReminderStatus(done: Boolean, reminder: Reminder) : Reminder {
         val reminderCheck = ReminderCheck(
             done = done,
             dateTime = LocalDateTime.now(),
@@ -85,7 +85,14 @@ class MainViewModel(
         )
         reminderCheckRepository.create(reminderCheck)
 
-        _reminders.value?.first { it.id == reminder.id }?.reminderChecks?.add(reminderCheck)
+        reminder.reminderChecks.add(reminderCheck)
+
+        if (_reminders.value != null) {
+            val newReminders = _reminders.value!!.map { if (it.id == reminder.id) reminder else it }
+            _reminders.value = newReminders
+        }
+
+        return reminder
     }
 
     fun notifyReminderWidgets(

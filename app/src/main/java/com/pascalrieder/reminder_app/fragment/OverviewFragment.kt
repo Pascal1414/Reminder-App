@@ -85,8 +85,8 @@ class OverviewFragment : Fragment() {
     }
 
     private fun onDoneClick(reminder: Reminder) = lifecycleScope.launch {
-        viewModel.updateReminderStatus(!reminder.isDone(), reminder)
-        viewModel.notifyReminderWidgets(requireContext(), reminder)
+        val updatedReminder = viewModel.updateReminderStatus(!reminder.isDone(), reminder)
+        viewModel.notifyReminderWidgets(requireContext(), updatedReminder)
     }
 
     override fun onDestroyView() {
